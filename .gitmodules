@@ -1,0 +1,3 @@
+[submodule "Circuit/Circuit/libraries"]
+	path = Circuit/Circuit/libraries
+	url = https://github.com/PatrickBaus/KiCad-libraries.git
