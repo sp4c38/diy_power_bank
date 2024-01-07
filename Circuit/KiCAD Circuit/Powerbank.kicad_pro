@@ -392,7 +392,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "Circuit_MAX1758.kicad_pro",
+    "filename": "Powerbank.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -481,8 +481,8 @@
       ""
     ],
     [
-      "99738e17-ed78-4474-888b-e140813a036f",
-      "Simulation"
+      "37a9089d-2b74-4b7d-8948-a4e4f2352af3",
+      "MAX1758"
     ]
   ],
   "text_variables": {}
