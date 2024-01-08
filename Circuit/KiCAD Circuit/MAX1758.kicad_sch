@@ -1840,7 +1840,7 @@
   (symbol (lib_id "power:GNDREF") (at 154.305 81.28 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 056cd6ab-2cc5-4949-8d74-9ce5ba1a5bff)
-    (property "Reference" "#PWR02" (at 154.305 87.63 0)
+    (property "Reference" "#PWR?" (at 154.305 87.63 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 154.305 86.36 0)
@@ -1856,7 +1856,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR02") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR013") (unit 1)
@@ -1868,7 +1868,7 @@
   (symbol (lib_id "Device:C_Small") (at 142.24 81.915 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 057a9461-e2b7-44b3-b5c1-f0351f5d46bc)
-    (property "Reference" "C2" (at 139.7 80.645 90)
+    (property "Reference" "C?" (at 139.7 80.645 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "0.1μF" (at 145.415 80.645 90)
@@ -1885,7 +1885,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -1897,7 +1897,7 @@
   (symbol (lib_id "power:GNDS") (at 140.97 130.175 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 16854173-44ca-46a6-9e42-daa56c3dbb04)
-    (property "Reference" "#PWR08" (at 140.97 136.525 0)
+    (property "Reference" "#PWR?" (at 140.97 136.525 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDS" (at 140.97 134.62 0)
@@ -1913,7 +1913,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR08") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR011") (unit 1)
@@ -1925,7 +1925,7 @@
   (symbol (lib_id "power:GNDS") (at 128.27 130.175 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 17382c10-0ead-4d31-9e0d-7457ab6980f7)
-    (property "Reference" "#PWR09" (at 128.27 136.525 0)
+    (property "Reference" "#PWR?" (at 128.27 136.525 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDS" (at 128.27 134.62 0)
@@ -1941,7 +1941,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR09") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR09") (unit 1)
@@ -1953,7 +1953,7 @@
   (symbol (lib_id "Device:R_US") (at 170.18 105.41 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 18ddf585-4854-4836-8e70-d3718b0c1cfc)
-    (property "Reference" "R9" (at 168.91 107.315 90)
+    (property "Reference" "R?" (at 168.91 107.315 90)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "10kΩ" (at 174.625 107.315 90)
@@ -1970,7 +1970,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R9") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -1982,7 +1982,7 @@
   (symbol (lib_id "Device:L") (at 149.225 97.155 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 1ea77415-092d-41e4-8392-0beaa1dd5f2c)
-    (property "Reference" "L1" (at 149.225 92.075 90)
+    (property "Reference" "L?" (at 149.225 92.075 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "22μH" (at 149.225 94.615 90)
@@ -1999,7 +1999,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "L1") (unit 1)
+          (reference "L?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "L?") (unit 1)
@@ -2011,7 +2011,7 @@
   (symbol (lib_id "Custom Parts:MAX1758") (at 124.46 84.455 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 21276c3b-7eb0-4512-a647-6d82a50a8d37)
-    (property "Reference" "U1" (at 124.46 54.61 0)
+    (property "Reference" "U?" (at 124.46 54.61 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "MAX1758" (at 124.46 57.15 0)
@@ -2054,7 +2054,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "U1") (unit 1)
+          (reference "U?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "U?") (unit 1)
@@ -2066,7 +2066,7 @@
   (symbol (lib_id "Device:D_Schottky") (at 141.605 100.965 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 21d14ab6-4144-46f6-83c0-3668e33057bc)
-    (property "Reference" "D4" (at 147.955 98.425 0)
+    (property "Reference" "D?" (at 147.955 98.425 0)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "MBRS340" (at 153.035 100.33 0)
@@ -2083,7 +2083,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "D4") (unit 1)
+          (reference "D?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "D?") (unit 1)
@@ -2095,7 +2095,7 @@
   (symbol (lib_id "Device:C_Small") (at 151.765 74.295 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 2843c08a-d7a2-4b5e-8384-3ebe484f63fe)
-    (property "Reference" "C4" (at 153.67 71.755 90)
+    (property "Reference" "C?" (at 153.67 71.755 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "0.1μF" (at 154.94 73.025 90)
@@ -2112,7 +2112,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C4") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -2124,7 +2124,7 @@
   (symbol (lib_id "power:GNDREF") (at 111.76 81.915 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 299c20bd-d8c9-43a2-b9e1-9f2c6a1bc68c)
-    (property "Reference" "#PWR04" (at 111.76 88.265 0)
+    (property "Reference" "#PWR?" (at 111.76 88.265 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 111.76 86.995 0)
@@ -2140,7 +2140,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR04") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR06") (unit 1)
@@ -2152,7 +2152,7 @@
   (symbol (lib_id "Device:C_Polarized_US") (at 114.935 125.095 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 2d5c2959-4fa8-4275-8201-dcc6b6fd5bc8)
-    (property "Reference" "C10" (at 118.11 123.1899 0)
+    (property "Reference" "C?" (at 118.11 123.1899 0)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "22μF" (at 118.11 125.095 0)
@@ -2169,7 +2169,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C10") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -2181,7 +2181,7 @@
   (symbol (lib_id "Device:R_US") (at 165.735 134.62 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 31b46d8e-e7c6-45fe-b6c0-ed1ab9d118c5)
-    (property "Reference" "R13" (at 162.56 132.08 90)
+    (property "Reference" "R?" (at 162.56 132.08 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "300Ω" (at 167.005 132.08 90)
@@ -2198,7 +2198,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R13") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2210,7 +2210,7 @@
   (symbol (lib_id "Device:LED") (at 174.625 139.7 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 3286c061-d2a9-48c7-a1f6-e754f3de1b83)
-    (property "Reference" "D5" (at 172.085 138.43 0)
+    (property "Reference" "D?" (at 172.085 138.43 0)
       (effects (font (size 1 1)))
     )
     (property "Value" "LED" (at 177.8 138.43 0)
@@ -2227,7 +2227,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "D5") (unit 1)
+          (reference "D?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "D?") (unit 1)
@@ -2239,7 +2239,7 @@
   (symbol (lib_id "Device:R_US") (at 170.18 111.125 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 32fcd44b-1f13-4517-a547-6f4392ec21bb)
-    (property "Reference" "R10" (at 166.37 113.03 90)
+    (property "Reference" "R?" (at 166.37 113.03 90)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "10kΩ" (at 171.45 113.03 90)
@@ -2256,7 +2256,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R10") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2268,7 +2268,7 @@
   (symbol (lib_id "power:GNDREF") (at 143.51 104.775 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 3316525b-838f-4b14-b773-fe44f9536e27)
-    (property "Reference" "#PWR015" (at 143.51 111.125 0)
+    (property "Reference" "#PWR?" (at 143.51 111.125 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 143.51 109.22 0)
@@ -2284,7 +2284,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR015") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR012") (unit 1)
@@ -2296,7 +2296,7 @@
   (symbol (lib_id "Device:R_Small_US") (at 145.415 74.295 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 3c5527a1-882f-4bff-b151-7623c42d4229)
-    (property "Reference" "R6" (at 146.05 70.485 90)
+    (property "Reference" "R?" (at 146.05 70.485 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "10kΩ" (at 146.05 72.39 90)
@@ -2313,7 +2313,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R6") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2325,7 +2325,7 @@
   (symbol (lib_id "Device:R_US") (at 95.25 85.725 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 4062710f-0cc3-4fcd-9ae0-9eab555cbd2d)
-    (property "Reference" "R5" (at 93.98 81.28 90)
+    (property "Reference" "R?" (at 93.98 81.28 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "75kΩ" (at 94.615 83.185 90)
@@ -2342,7 +2342,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R5") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2354,7 +2354,7 @@
   (symbol (lib_id "Device:C_Small") (at 142.24 78.105 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 4ff0e327-48cc-4926-bbbd-0d402d4717e3)
-    (property "Reference" "C1" (at 139.7 76.835 90)
+    (property "Reference" "C?" (at 139.7 76.835 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "0.1μF" (at 145.415 76.835 90)
@@ -2371,7 +2371,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C1") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -2383,7 +2383,7 @@
   (symbol (lib_id "Device:R_US") (at 170.18 116.205 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 540333a4-8e3d-4f47-a658-03e776f7aa46)
-    (property "Reference" "R11" (at 166.37 118.11 90)
+    (property "Reference" "R?" (at 166.37 118.11 90)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "10kΩ" (at 171.45 118.11 90)
@@ -2400,7 +2400,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R11") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2412,7 +2412,7 @@
   (symbol (lib_id "Device:C_Small") (at 108.585 60.96 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 551e3e76-e327-497e-8caf-c9b56499caa2)
-    (property "Reference" "C13" (at 102.87 57.785 90)
+    (property "Reference" "C?" (at 102.87 57.785 90)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "4.7μF" (at 102.87 59.69 90)
@@ -2429,7 +2429,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C13") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -2441,7 +2441,7 @@
   (symbol (lib_id "Device:D") (at 147.955 85.725 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 56e7fcb9-9cd5-4531-bc39-7304bb15e04c)
-    (property "Reference" "D3" (at 150.495 82.55 90)
+    (property "Reference" "D?" (at 150.495 82.55 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "D" (at 146.685 88.9 90)
@@ -2464,7 +2464,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "D3") (unit 1)
+          (reference "D?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "D?") (unit 1)
@@ -2476,7 +2476,7 @@
   (symbol (lib_id "Device:R_US") (at 94.615 70.485 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 5f1a865f-fb62-400c-8720-1052a2f89667)
-    (property "Reference" "R6" (at 91.44 68.58 90)
+    (property "Reference" "R?" (at 91.44 68.58 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "75kΩ" (at 96.52 68.58 90)
@@ -2493,7 +2493,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R6") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2505,7 +2505,7 @@
   (symbol (lib_id "Device:C_Small") (at 151.765 69.215 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 60af8a71-f790-4b96-a61d-bd9348944db9)
-    (property "Reference" "C17" (at 153.67 66.675 90)
+    (property "Reference" "C?" (at 153.67 66.675 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "1nF" (at 154.94 67.945 90)
@@ -2522,7 +2522,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C17") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -2534,7 +2534,7 @@
   (symbol (lib_id "power:GNDREF") (at 210.185 111.76 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 60f51cea-6cc9-443c-82bd-0f54b9bc00f5)
-    (property "Reference" "#PWR024" (at 210.185 118.11 0)
+    (property "Reference" "#PWR?" (at 210.185 118.11 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 210.185 116.205 0)
@@ -2550,7 +2550,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR024") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR024") (unit 1)
@@ -2562,7 +2562,7 @@
   (symbol (lib_id "Device:R_US") (at 99.06 81.915 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 628539ce-34fd-489d-b1cd-794ec3aaf3ef)
-    (property "Reference" "R4" (at 101.6 80.645 0)
+    (property "Reference" "R?" (at 101.6 80.645 0)
       (effects (font (size 1 1)))
     )
     (property "Value" "75kΩ" (at 102.235 82.55 0)
@@ -2579,7 +2579,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R4") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2591,7 +2591,7 @@
   (symbol (lib_id "power:GNDS") (at 114.935 130.175 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 6449bff3-42e5-4ada-b668-f5cb818ab9e5)
-    (property "Reference" "#PWR010" (at 114.935 136.525 0)
+    (property "Reference" "#PWR?" (at 114.935 136.525 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDS" (at 114.935 134.62 0)
@@ -2607,7 +2607,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR010") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR08") (unit 1)
@@ -2619,7 +2619,7 @@
   (symbol (lib_id "Device:C_Polarized_US") (at 128.27 125.095 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 6e290858-a61f-42b1-ac38-a6f4ac33b4dd)
-    (property "Reference" "C11" (at 131.445 123.1899 0)
+    (property "Reference" "C?" (at 131.445 123.1899 0)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "22μF" (at 131.445 125.095 0)
@@ -2636,7 +2636,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C11") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -2648,7 +2648,7 @@
   (symbol (lib_id "MC7805ACTG:MC7805ACTG") (at 187.96 86.36 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 77241bfc-be7f-4df7-8c09-5d113a0468c6)
-    (property "Reference" "U3" (at 188.595 78.105 0)
+    (property "Reference" "U?" (at 188.595 78.105 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "MC7805ACTG" (at 188.595 80.645 0)
@@ -2666,7 +2666,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "U3") (unit 1)
+          (reference "U?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "U?") (unit 1)
@@ -2678,7 +2678,7 @@
   (symbol (lib_id "power:GNDREF") (at 204.47 88.9 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 78fa08e5-b459-49ac-aa53-101734631f8d)
-    (property "Reference" "#PWR014" (at 204.47 95.25 0)
+    (property "Reference" "#PWR?" (at 204.47 95.25 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 204.47 93.345 0)
@@ -2694,7 +2694,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR014") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR015") (unit 1)
@@ -2706,7 +2706,7 @@
   (symbol (lib_id "power:GNDREF") (at 98.425 113.03 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 7983ed09-ac91-4521-90ab-a71a4f960aa6)
-    (property "Reference" "#PWR013" (at 98.425 119.38 0)
+    (property "Reference" "#PWR?" (at 98.425 119.38 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 98.425 118.11 0)
@@ -2722,7 +2722,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR013") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR03") (unit 1)
@@ -2734,7 +2734,7 @@
   (symbol (lib_id "ArduinoMKRZero:ArduinoMKRZero") (at 194.945 120.65 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 7f89f891-6169-4d71-8654-c0c15e2f2f41)
-    (property "Reference" "U2" (at 194.945 95.885 0)
+    (property "Reference" "U?" (at 194.945 95.885 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "ArduinoMKRZero" (at 194.945 98.425 0)
@@ -2777,7 +2777,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "U2") (unit 1)
+          (reference "U?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "U?") (unit 1)
@@ -2789,7 +2789,7 @@
   (symbol (lib_id "power:GNDS") (at 137.16 100.965 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 91a0e448-b1ad-4da9-957e-52d9adf91237)
-    (property "Reference" "#PWR011" (at 137.16 107.315 0)
+    (property "Reference" "#PWR?" (at 137.16 107.315 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDS" (at 137.16 105.41 0)
@@ -2805,7 +2805,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR011") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR010") (unit 1)
@@ -2817,7 +2817,7 @@
   (symbol (lib_id "power:VCC") (at 161.925 57.15 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 95384038-3f5b-4e28-b0d0-8ee6b0376428)
-    (property "Reference" "#PWR01" (at 161.925 60.96 0)
+    (property "Reference" "#PWR?" (at 161.925 60.96 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "VCC" (at 161.925 53.34 0)
@@ -2833,7 +2833,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR01") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR014") (unit 1)
@@ -2845,7 +2845,7 @@
   (symbol (lib_id "Device:R_US") (at 165.735 139.7 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 95a7fe73-1e84-47c9-8b20-4da47ddacd06)
-    (property "Reference" "R14" (at 162.56 137.795 90)
+    (property "Reference" "R?" (at 162.56 137.795 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "300Ω" (at 167.005 137.795 90)
@@ -2862,7 +2862,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R14") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2874,7 +2874,7 @@
   (symbol (lib_id "Device:R_US") (at 99.06 74.295 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 9a8bf109-e26f-4aa9-a339-951896cfca4e)
-    (property "Reference" "R7" (at 95.885 73.025 0)
+    (property "Reference" "R?" (at 95.885 73.025 0)
       (effects (font (size 1 1)))
     )
     (property "Value" "11.5kΩ" (at 94.615 74.93 0)
@@ -2891,7 +2891,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R7") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)
@@ -2903,7 +2903,7 @@
   (symbol (lib_id "power:GNDREF") (at 104.775 74.93 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 9d344f94-d71d-4e7a-86f0-1496d7e512c5)
-    (property "Reference" "#PWR05" (at 104.775 81.28 0)
+    (property "Reference" "#PWR?" (at 104.775 81.28 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 104.775 80.01 0)
@@ -2919,7 +2919,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR05") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR05") (unit 1)
@@ -2931,7 +2931,7 @@
   (symbol (lib_id "Device:LED") (at 174.625 134.62 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid a244ccd2-a219-45a8-a97d-3680b1c2eb0e)
-    (property "Reference" "D6" (at 172.085 133.35 0)
+    (property "Reference" "D?" (at 172.085 133.35 0)
       (effects (font (size 1 1)))
     )
     (property "Value" "LED" (at 177.8 133.35 0)
@@ -2948,7 +2948,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "D6") (unit 1)
+          (reference "D?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "D?") (unit 1)
@@ -2960,7 +2960,7 @@
   (symbol (lib_id "Device:D_Schottky") (at 161.925 73.025 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid a9308ff7-7165-4d0f-8c2b-fffeebe8aba2)
-    (property "Reference" "D2" (at 165.1 72.0724 90)
+    (property "Reference" "D?" (at 165.1 72.0724 90)
       (effects (font (size 1 1)) (justify right))
     )
     (property "Value" "MBRS340" (at 165.1 73.66 90)
@@ -2977,7 +2977,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "D2") (unit 1)
+          (reference "D?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "D?") (unit 1)
@@ -2989,7 +2989,7 @@
   (symbol (lib_id "Device:C") (at 140.97 125.095 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid aa8e59a3-3a33-4d81-a31b-32ba58b10507)
-    (property "Reference" "C12" (at 144.145 123.19 0)
+    (property "Reference" "C?" (at 144.145 123.19 0)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "0.22μF" (at 144.145 125.095 0)
@@ -3006,7 +3006,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C12") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -3018,7 +3018,7 @@
   (symbol (lib_id "Device:C_Small") (at 139.7 93.98 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b3c1ab1e-6dea-4b2f-8410-982f49d3031c)
-    (property "Reference" "C14" (at 143.51 92.075 0)
+    (property "Reference" "C?" (at 143.51 92.075 0)
       (effects (font (size 1 1)) (justify left))
     )
     (property "Value" "0.1μF" (at 144.78 95.885 0)
@@ -3035,7 +3035,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C14") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -3047,7 +3047,7 @@
   (symbol (lib_id "power:GNDREF") (at 90.805 71.12 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid c1c538a8-9c83-4426-8481-4c4f48ee17d3)
-    (property "Reference" "#PWR06" (at 90.805 77.47 0)
+    (property "Reference" "#PWR?" (at 90.805 77.47 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 90.805 76.2 0)
@@ -3063,7 +3063,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR01") (unit 1)
@@ -3075,7 +3075,7 @@
   (symbol (lib_id "Device:C_Small") (at 103.505 111.76 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid cfe9c6f8-927d-4059-b6ee-68e8289323e3)
-    (property "Reference" "C6" (at 100.965 110.49 90)
+    (property "Reference" "C?" (at 100.965 110.49 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "1.8nF" (at 106.68 110.49 90)
@@ -3092,7 +3092,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C6") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -3104,7 +3104,7 @@
   (symbol (lib_id "power:GNDREF") (at 90.805 85.725 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid ee1fd7ce-8a45-474b-a064-69872134485a)
-    (property "Reference" "#PWR03" (at 90.805 92.075 0)
+    (property "Reference" "#PWR?" (at 90.805 92.075 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 90.805 90.805 0)
@@ -3120,7 +3120,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR03") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR02") (unit 1)
@@ -3132,7 +3132,7 @@
   (symbol (lib_id "Device:C_Small") (at 103.505 107.315 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid ee3de54c-e88c-41bc-94f2-707bbd656438)
-    (property "Reference" "C5" (at 100.965 106.045 90)
+    (property "Reference" "C?" (at 100.965 106.045 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "1.1nF" (at 106.68 106.045 90)
@@ -3149,7 +3149,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "C5") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "C?") (unit 1)
@@ -3161,7 +3161,7 @@
   (symbol (lib_id "Device:Thermistor_US") (at 109.22 74.295 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid ef9d3d2c-5b20-4f01-a8c9-d32313aef6e0)
-    (property "Reference" "TH1" (at 108.585 71.755 90)
+    (property "Reference" "TH?" (at 108.585 71.755 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "Thermistor_US" (at 110.49 71.755 0)
@@ -3178,7 +3178,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "TH1") (unit 1)
+          (reference "TH?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "TH?") (unit 1)
@@ -3190,7 +3190,7 @@
   (symbol (lib_id "power:GNDREF") (at 104.14 60.96 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid f1c46d95-6e51-41df-80a8-7edef83ecaf6)
-    (property "Reference" "#PWR012" (at 104.14 67.31 0)
+    (property "Reference" "#PWR?" (at 104.14 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 104.14 66.04 0)
@@ -3206,7 +3206,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR012") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "#PWR04") (unit 1)
@@ -3218,7 +3218,7 @@
   (symbol (lib_id "Device:D") (at 140.97 62.865 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid f6af7368-aa47-407b-a755-a338abc7a879)
-    (property "Reference" "D1" (at 140.97 60.325 0)
+    (property "Reference" "D?" (at 140.97 60.325 0)
       (effects (font (size 1 1)))
     )
     (property "Value" "D" (at 140.97 59.055 0)
@@ -3241,7 +3241,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "D1") (unit 1)
+          (reference "D?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "D?") (unit 1)
@@ -3253,7 +3253,7 @@
   (symbol (lib_id "Device:LED") (at 174.625 129.54 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid fb26a6fd-c0cd-4c2a-8288-1deb7558e464)
-    (property "Reference" "D7" (at 172.085 128.27 0)
+    (property "Reference" "D?" (at 172.085 128.27 0)
       (effects (font (size 1 1)))
     )
     (property "Value" "LED" (at 177.8 128.27 0)
@@ -3270,7 +3270,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "D7") (unit 1)
+          (reference "D?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "D?") (unit 1)
@@ -3282,7 +3282,7 @@
   (symbol (lib_id "Device:R_US") (at 165.735 129.54 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid fe1e184e-0d15-4f3f-8624-832249c1aac8)
-    (property "Reference" "R12" (at 162.56 127 90)
+    (property "Reference" "R?" (at 162.56 127 90)
       (effects (font (size 1 1)))
     )
     (property "Value" "300Ω" (at 167.005 127 90)
@@ -3299,7 +3299,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "R12") (unit 1)
+          (reference "R?") (unit 1)
         )
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc/37a9089d-2b74-4b7d-8948-a4e4f2352af3"
           (reference "R?") (unit 1)

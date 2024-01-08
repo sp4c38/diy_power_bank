@@ -2050,7 +2050,7 @@
   (symbol (lib_id "power:GND") (at 213.36 72.39 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 06d681f6-2676-468e-aea4-6a91b147886b)
-    (property "Reference" "#PWR027" (at 213.36 78.74 0)
+    (property "Reference" "#PWR012" (at 213.36 78.74 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 213.36 77.47 0)
@@ -2066,7 +2066,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR027") (unit 1)
+          (reference "#PWR012") (unit 1)
         )
       )
     )
@@ -2231,7 +2231,7 @@
   (symbol (lib_id "power:GND") (at 71.755 147.955 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 1acbd8df-c671-41a0-89e6-108b097e9f94)
-    (property "Reference" "#PWR07" (at 71.755 154.305 0)
+    (property "Reference" "#PWR01" (at 71.755 154.305 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 71.755 153.035 0)
@@ -2247,7 +2247,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR07") (unit 1)
+          (reference "#PWR01") (unit 1)
         )
       )
     )
@@ -2406,7 +2406,7 @@
   (symbol (lib_id "power:GND") (at 116.84 137.16 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 389d95ca-9ef6-4c29-9020-2be2e90d33f8)
-    (property "Reference" "#PWR019" (at 116.84 143.51 0)
+    (property "Reference" "#PWR05" (at 116.84 143.51 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 116.84 141.605 0)
@@ -2422,7 +2422,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR019") (unit 1)
+          (reference "#PWR05") (unit 1)
         )
       )
     )
@@ -2483,7 +2483,7 @@
   (symbol (lib_id "power:GND") (at 149.86 98.425 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 3ecb35da-ba02-40f8-ae8c-aecefe4ccf64)
-    (property "Reference" "#PWR025" (at 149.86 104.775 0)
+    (property "Reference" "#PWR010" (at 149.86 104.775 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 149.86 103.505 0)
@@ -2499,7 +2499,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR025") (unit 1)
+          (reference "#PWR010") (unit 1)
         )
       )
     )
@@ -2690,7 +2690,7 @@
   (symbol (lib_id "power:GNDREF") (at 73.66 133.35 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 648b1f38-9d7e-4dc5-8632-c8a42614e869)
-    (property "Reference" "#PWR016" (at 73.66 139.7 0)
+    (property "Reference" "#PWR02" (at 73.66 139.7 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 73.66 138.43 0)
@@ -2706,7 +2706,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR016") (unit 1)
+          (reference "#PWR02") (unit 1)
         )
       )
     )
@@ -2741,7 +2741,7 @@
   (symbol (lib_id "power:GND") (at 161.29 98.425 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 72746f91-4ec1-4575-9934-11d378d8478f)
-    (property "Reference" "#PWR026" (at 161.29 104.775 0)
+    (property "Reference" "#PWR011" (at 161.29 104.775 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 161.29 103.505 0)
@@ -2757,7 +2757,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR026") (unit 1)
+          (reference "#PWR011") (unit 1)
         )
       )
     )
@@ -2896,7 +2896,7 @@
   (symbol (lib_id "power:GND") (at 88.9 100.33 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 85f4bd93-6677-48d8-b57f-63f7d7752d03)
-    (property "Reference" "#PWR017" (at 88.9 106.68 0)
+    (property "Reference" "#PWR03" (at 88.9 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 88.9 104.775 0)
@@ -2912,7 +2912,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR017") (unit 1)
+          (reference "#PWR03") (unit 1)
         )
       )
     )
@@ -3025,7 +3025,7 @@
   (symbol (lib_id "power:GNDREF") (at 101.6 133.35 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 9bb2cf78-f4d7-46ee-b7d4-760a406693dd)
-    (property "Reference" "#PWR018" (at 101.6 139.7 0)
+    (property "Reference" "#PWR04" (at 101.6 139.7 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 101.6 138.43 0)
@@ -3041,7 +3041,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR018") (unit 1)
+          (reference "#PWR04") (unit 1)
         )
       )
     )
@@ -3050,7 +3050,7 @@
   (symbol (lib_id "power:GND") (at 260.35 72.39 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid a10402c5-a4e5-4bb2-8b6e-41301f2f8ecd)
-    (property "Reference" "#PWR029" (at 260.35 78.74 0)
+    (property "Reference" "#PWR014" (at 260.35 78.74 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 260.35 76.835 0)
@@ -3066,7 +3066,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR029") (unit 1)
+          (reference "#PWR014") (unit 1)
         )
       )
     )
@@ -3103,7 +3103,7 @@
   (symbol (lib_id "power:GND") (at 139.7 98.425 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid ade103cb-e388-45e9-8ab3-a0f25b296bd8)
-    (property "Reference" "#PWR022" (at 139.7 104.775 0)
+    (property "Reference" "#PWR08" (at 139.7 104.775 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 139.7 103.505 0)
@@ -3119,7 +3119,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR022") (unit 1)
+          (reference "#PWR08") (unit 1)
         )
       )
     )
@@ -3208,7 +3208,7 @@
   (symbol (lib_id "power:GND") (at 127 71.755 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid b4b8896b-ce99-42a2-8bd0-5af098aa4fb2)
-    (property "Reference" "#PWR020" (at 127 78.105 0)
+    (property "Reference" "#PWR06" (at 127 78.105 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 127 76.835 0)
@@ -3224,7 +3224,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR020") (unit 1)
+          (reference "#PWR06") (unit 1)
         )
       )
     )
@@ -3285,7 +3285,7 @@
   (symbol (lib_id "power:GND") (at 131.445 121.285 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid c2fd970a-6047-4905-878b-c03e7d146cb3)
-    (property "Reference" "#PWR021" (at 131.445 127.635 0)
+    (property "Reference" "#PWR07" (at 131.445 127.635 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 131.445 126.365 0)
@@ -3301,7 +3301,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR021") (unit 1)
+          (reference "#PWR07") (unit 1)
         )
       )
     )
@@ -3310,7 +3310,7 @@
   (symbol (lib_id "power:GND") (at 227.33 130.81 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid d0f8b3d5-84bc-4608-9c76-5568056b3340)
-    (property "Reference" "#PWR028" (at 227.33 137.16 0)
+    (property "Reference" "#PWR013" (at 227.33 137.16 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 227.33 135.89 0)
@@ -3326,7 +3326,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR028") (unit 1)
+          (reference "#PWR013") (unit 1)
         )
       )
     )
@@ -3361,7 +3361,7 @@
   (symbol (lib_id "power:GNDREF") (at 147.955 118.11 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid d85cebcc-1aa8-4abf-b337-26950023c8a7)
-    (property "Reference" "#PWR023" (at 147.955 124.46 0)
+    (property "Reference" "#PWR09" (at 147.955 124.46 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GNDREF" (at 147.955 123.19 0)
@@ -3377,7 +3377,7 @@
     (instances
       (project "Powerbank"
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
-          (reference "#PWR023") (unit 1)
+          (reference "#PWR09") (unit 1)
         )
       )
     )
@@ -3603,23 +3603,6 @@
         (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc"
           (reference "R2") (unit 1)
         )
-      )
-    )
-  )
-
-  (sheet (at 21.59 20.32) (size 12.7 5.08) (fields_autoplaced)
-    (stroke (width 0.1524) (type solid))
-    (fill (color 0 0 0 0.0000))
-    (uuid 37a9089d-2b74-4b7d-8948-a4e4f2352af3)
-    (property "Sheetname" "MAX1758" (at 21.59 19.6084 0)
-      (effects (font (size 1.27 1.27)) (justify left bottom))
-    )
-    (property "Sheetfile" "MAX1758.kicad_sch" (at 21.59 25.9846 0)
-      (effects (font (size 1.27 1.27)) (justify left top))
-    )
-    (instances
-      (project "Powerbank"
-        (path "/b34928fe-f013-4cc5-8c95-edbe1f5c3ffc" (page "2"))
       )
     )
   )
