@@ -1,0 +1,1006 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>/Users/sp4c38/Library/Mobile Documents/com~apple~CloudDocs/Personal/Interests/Projects/Powerbank/Circuit/KiCAD Circuit/Powerbank.kicad_sch</source>
+    <date>2024 January 12, Friday 20:24:44</date>
+    <tool>Eeschema 7.0.8</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>BQ76920 Power Bank Circuit</title>
+        <company>[Private] Léon Becker</company>
+        <rev>1.0</rev>
+        <date>2023-11-19</date>
+        <source>Powerbank.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>0.1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fc9d9a88-088d-4246-84a9-bc8743e1c146</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>0.1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8f572676-c4ca-4b6e-a485-33dde836c22c</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>0.1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0a9adfdb-43a8-4f15-b7cb-cee77005a30a</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>470pF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>facd4cba-fa33-445e-8db1-5f983692958a</tstamps>
+    </comp>
+    <comp ref="C5">
+      <value>4700pF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0b6f8078-6d08-49dd-a878-03964b0ce807</tstamps>
+    </comp>
+    <comp ref="C6">
+      <value>0.1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3c56a235-f015-4b83-b02b-4f64fee3d888</tstamps>
+    </comp>
+    <comp ref="C7">
+      <value>1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9af11f5d-c2fc-4de7-8711-c9ff425bd95f</tstamps>
+    </comp>
+    <comp ref="C8">
+      <value>0.1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>60c8c6d6-fa72-4dda-95b4-c63458e7c02f</tstamps>
+    </comp>
+    <comp ref="C9">
+      <value>4.7μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>111875b2-aec0-4715-9a89-e9fe96a6e92b</tstamps>
+    </comp>
+    <comp ref="C10">
+      <value>0.1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>84797dcb-defd-48f3-8328-5d8a2182d921</tstamps>
+    </comp>
+    <comp ref="C11">
+      <value>0.1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4fbcebb4-7df8-499c-8c7b-b37122e53b2b</tstamps>
+    </comp>
+    <comp ref="Cc1">
+      <value>1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1e37e61e-230a-4311-973d-0139b4aea756</tstamps>
+    </comp>
+    <comp ref="Cc2">
+      <value>1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>47c60e3c-a40c-4585-b139-e420aa3ab4a2</tstamps>
+    </comp>
+    <comp ref="Cc3">
+      <value>1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>efb2aa4f-1d22-41b7-9bf0-35f21b540db1</tstamps>
+    </comp>
+    <comp ref="Cc4">
+      <value>1μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7d3eec1c-ee63-4178-aa87-84d82b888b37</tstamps>
+    </comp>
+    <comp ref="CELL_1">
+      <value>~</value>
+      <libsource lib="Device" part="Battery_Cell" description="Single-cell battery"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Single-cell battery"/>
+      <property name="ki_keywords" value="battery cell"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bd9c99cc-25e5-49fc-8a52-1ba9f282f886</tstamps>
+    </comp>
+    <comp ref="CELL_2">
+      <value>~</value>
+      <libsource lib="Device" part="Battery_Cell" description="Single-cell battery"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Single-cell battery"/>
+      <property name="ki_keywords" value="battery cell"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>34cd9aad-2032-4e44-8c1e-e01d3cbdcaa2</tstamps>
+    </comp>
+    <comp ref="CELL_3">
+      <value>~</value>
+      <libsource lib="Device" part="Battery_Cell" description="Single-cell battery"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Single-cell battery"/>
+      <property name="ki_keywords" value="battery cell"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d4bb0c82-0574-4901-b9eb-581dfed15f6f</tstamps>
+    </comp>
+    <comp ref="Cf1">
+      <value>2.2μF</value>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0e554d07-723e-418a-9c1d-f4e32e975d56</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>D</value>
+      <fields>
+        <field name="Sim.Device">D</field>
+        <field name="Sim.Pins">1=K 2=A</field>
+      </fields>
+      <libsource lib="Device" part="D" description="Diode"/>
+      <property name="Sim.Device" value="D"/>
+      <property name="Sim.Pins" value="1=K 2=A"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Diode"/>
+      <property name="ki_keywords" value="diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>df18d321-1821-4da3-887a-a63aac5e385c</tstamps>
+    </comp>
+    <comp ref="D2">
+      <value>TVS Diode 30V</value>
+      <libsource lib="Device" part="D_Zener" description="Zener diode"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Zener diode"/>
+      <property name="ki_keywords" value="diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1d9c5d09-2c1e-42f6-82d9-39ab0625e952</tstamps>
+    </comp>
+    <comp ref="D3">
+      <value>D</value>
+      <fields>
+        <field name="Sim.Device">D</field>
+        <field name="Sim.Pins">1=K 2=A</field>
+      </fields>
+      <libsource lib="Device" part="D" description="Diode"/>
+      <property name="Sim.Device" value="D"/>
+      <property name="Sim.Pins" value="1=K 2=A"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Diode"/>
+      <property name="ki_keywords" value="diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c930779a-7f55-4dd2-baca-11a561b38157</tstamps>
+    </comp>
+    <comp ref="Q1">
+      <value>NMOS</value>
+      <datasheet>https://ngspice.sourceforge.io/docs/ngspice-manual.pdf</datasheet>
+      <fields>
+        <field name="Sim.Device">NMOS</field>
+        <field name="Sim.Pins">1=D 2=G 3=S</field>
+        <field name="Sim.Type">VDMOS</field>
+      </fields>
+      <libsource lib="Simulation_SPICE" part="NMOS" description="N-MOSFET transistor, drain/source/gate"/>
+      <property name="Sim.Device" value="NMOS"/>
+      <property name="Sim.Type" value="VDMOS"/>
+      <property name="Sim.Pins" value="1=D 2=G 3=S"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="N-MOSFET transistor, drain/source/gate"/>
+      <property name="ki_keywords" value="transistor NMOS N-MOS N-MOSFET simulation"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e37e23f5-b0a2-4c8f-b0de-4c162d95e458</tstamps>
+    </comp>
+    <comp ref="Q2">
+      <value>PMOS</value>
+      <datasheet>https://ngspice.sourceforge.io/docs/ngspice-manual.pdf</datasheet>
+      <fields>
+        <field name="Sim.Device">PMOS</field>
+        <field name="Sim.Pins">1=D 2=G 3=S</field>
+        <field name="Sim.Type">VDMOS</field>
+      </fields>
+      <libsource lib="Simulation_SPICE" part="PMOS" description="P-MOSFET transistor, drain/source/gate"/>
+      <property name="Sim.Device" value="PMOS"/>
+      <property name="Sim.Type" value="VDMOS"/>
+      <property name="Sim.Pins" value="1=D 2=G 3=S"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="P-MOSFET transistor, drain/source/gate"/>
+      <property name="ki_keywords" value="transistor PMOS P-MOS P-MOSFET simulation"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2107f2b7-3e21-4a99-ad49-cb5334f4f344</tstamps>
+    </comp>
+    <comp ref="Q3">
+      <value>NMOS</value>
+      <datasheet>https://ngspice.sourceforge.io/docs/ngspice-manual.pdf</datasheet>
+      <fields>
+        <field name="Sim.Device">NMOS</field>
+        <field name="Sim.Pins">1=D 2=G 3=S</field>
+        <field name="Sim.Type">VDMOS</field>
+      </fields>
+      <libsource lib="Simulation_SPICE" part="NMOS" description="N-MOSFET transistor, drain/source/gate"/>
+      <property name="Sim.Device" value="NMOS"/>
+      <property name="Sim.Type" value="VDMOS"/>
+      <property name="Sim.Pins" value="1=D 2=G 3=S"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="N-MOSFET transistor, drain/source/gate"/>
+      <property name="ki_keywords" value="transistor NMOS N-MOS N-MOSFET simulation"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1e13a004-bbbb-4213-b4bf-3b55969316d2</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>100Ω</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0ea30454-a823-4551-a9e6-cd21fea2f496</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>8mΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fea731ca-c954-4fab-9e50-987f1a642a64</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>100Ω</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4de96304-a12b-47d9-9e78-44068e5e2514</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>500kΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>446ba9ac-da34-4e42-a0b4-64c48976561e</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>10kΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f5a46a08-cbb1-4e9d-8735-c8c3b32acc28</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>10kΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3e30c985-160a-4a7f-a5e2-3e4dea84afba</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>1MΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bec94741-204a-4643-ac7a-080ccea8cbea</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>1MΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8c0a800a-91c6-45de-a674-427845756a77</tstamps>
+    </comp>
+    <comp ref="Rc1">
+      <value>50Ω</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b2fabf27-58e1-4950-820e-7d859aaa4661</tstamps>
+    </comp>
+    <comp ref="Rc2">
+      <value>50Ω</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>831adbb4-8536-4635-8954-47238f4d31f2</tstamps>
+    </comp>
+    <comp ref="Rc3">
+      <value>50Ω</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>84359a0a-1382-44b6-8fb7-3bc070300a9a</tstamps>
+    </comp>
+    <comp ref="Rc4">
+      <value>50Ω</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>15c4b796-537f-4648-a9ea-2195fc55ed80</tstamps>
+    </comp>
+    <comp ref="Rd1">
+      <value>10kΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>535c2d20-f802-4fc3-9a8f-3b96600f7645</tstamps>
+    </comp>
+    <comp ref="Rd2">
+      <value>10kΩ</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7ae658c5-c1a7-4615-bff0-c64da2f106f7</tstamps>
+    </comp>
+    <comp ref="Rf1">
+      <value>100Ω</value>
+      <libsource lib="Device" part="R_US" description="Resistor, US symbol"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Resistor, US symbol"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>78e6a5b8-bb15-40f1-934e-0fd2e23fe3ed</tstamps>
+    </comp>
+    <comp ref="SW1">
+      <value>SW_Push</value>
+      <libsource lib="Switch" part="SW_Push" description="Push button switch, generic, two pins"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Push button switch, generic, two pins"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f0f57f51-204d-4879-b005-abbf28f9bad9</tstamps>
+    </comp>
+    <comp ref="SW2">
+      <value>SW_SPST</value>
+      <libsource lib="Switch" part="SW_SPST" description="Single Pole Single Throw (SPST) switch"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Single Pole Single Throw (SPST) switch"/>
+      <property name="ki_keywords" value="switch lever"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6d55a23d-466c-4e1c-8367-038bcb1e994c</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>BQ7692003PW</value>
+      <footprint>BQ7692003PW:PW0020A_N</footprint>
+      <datasheet>BQ7692003PW</datasheet>
+      <fields>
+        <field name="Mouser">595-BQ7692003PW</field>
+      </fields>
+      <libsource lib="BQ7692003PW" part="BQ7692003PW" description=""/>
+      <property name="Mouser" value="595-BQ7692003PW"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_keywords" value="BQ7692003PW"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6e28becd-7155-4d9e-9d86-9c24cf48d7b0</tstamps>
+    </comp>
+    <comp ref="U2">
+      <value>Arduino_Nano_v3.x</value>
+      <footprint>Arduinos:Arduino_Nano_33_IoT_Socket</footprint>
+      <datasheet>http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf</datasheet>
+      <libsource lib="MCU_Module" part="Arduino_Nano_v3.x" description="Arduino Nano v3.x"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Powerbank.kicad_sch"/>
+      <property name="ki_description" value="Arduino Nano v3.x"/>
+      <property name="ki_keywords" value="Arduino nano microcontroller module USB"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ae21c411-fac7-4004-bd9a-dd93d1396188</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="BQ7692003PW" part="BQ7692003PW">
+      <docs>BQ7692003PW</docs>
+      <footprints>
+        <fp>PW0020A_N</fp>
+        <fp>PW0020A_M</fp>
+        <fp>PW0020A_L</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">BQ7692003PW</field>
+        <field name="Footprint">PW0020A_N</field>
+        <field name="Datasheet">BQ7692003PW</field>
+      </fields>
+      <pins>
+        <pin num="1" name="DSG" type="output"/>
+        <pin num="2" name="CHG" type="output"/>
+        <pin num="3" name="VSS" type="power_in"/>
+        <pin num="4" name="SDA" type="bidirectional"/>
+        <pin num="5" name="SCL" type="input"/>
+        <pin num="6" name="TS1" type="input"/>
+        <pin num="7" name="CAP1" type="output"/>
+        <pin num="8" name="REGOUT" type="power_out"/>
+        <pin num="9" name="REGSRC" type="power_in"/>
+        <pin num="10" name="BAT" type="power_in"/>
+        <pin num="11" name="NC" type="unspecified"/>
+        <pin num="12" name="VC5" type="input"/>
+        <pin num="13" name="VC4" type="input"/>
+        <pin num="14" name="VC3" type="input"/>
+        <pin num="15" name="VC2" type="input"/>
+        <pin num="16" name="VC1" type="input"/>
+        <pin num="17" name="VC0" type="input"/>
+        <pin num="18" name="SRP" type="input"/>
+        <pin num="19" name="SRN" type="input"/>
+        <pin num="20" name="ALERT" type="bidirectional"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Battery_Cell">
+      <description>Single-cell battery</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">BT</field>
+        <field name="Value">Battery_Cell</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_Small">
+      <description>Unpolarized capacitor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="D">
+      <description>Diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D</field>
+        <field name="Datasheet">~</field>
+        <field name="Sim.Device">D</field>
+        <field name="Sim.Pins">1=K 2=A</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="D_Zener">
+      <description>Zener diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_Zener</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_US">
+      <description>Resistor, US symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R_US</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="MCU_Module" part="Arduino_Nano_v3.x">
+      <description>Arduino Nano v3.x</description>
+      <docs>http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf</docs>
+      <footprints>
+        <fp>Arduino*Nano*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">A</field>
+        <field name="Value">Arduino_Nano_v3.x</field>
+        <field name="Footprint">Module:Arduino_Nano</field>
+        <field name="Datasheet">http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="D1/TX" type="bidirectional"/>
+        <pin num="2" name="D0/RX" type="bidirectional"/>
+        <pin num="3" name="~{RESET}" type="input"/>
+        <pin num="4" name="GND" type="power_in"/>
+        <pin num="5" name="D2" type="bidirectional"/>
+        <pin num="6" name="D3" type="bidirectional"/>
+        <pin num="7" name="D4" type="bidirectional"/>
+        <pin num="8" name="D5" type="bidirectional"/>
+        <pin num="9" name="D6" type="bidirectional"/>
+        <pin num="10" name="D7" type="bidirectional"/>
+        <pin num="11" name="D8" type="bidirectional"/>
+        <pin num="12" name="D9" type="bidirectional"/>
+        <pin num="13" name="D10" type="bidirectional"/>
+        <pin num="14" name="D11" type="bidirectional"/>
+        <pin num="15" name="D12" type="bidirectional"/>
+        <pin num="16" name="D13" type="bidirectional"/>
+        <pin num="17" name="3V3" type="power_out"/>
+        <pin num="18" name="AREF" type="input"/>
+        <pin num="19" name="A0" type="bidirectional"/>
+        <pin num="20" name="A1" type="bidirectional"/>
+        <pin num="21" name="A2" type="bidirectional"/>
+        <pin num="22" name="A3" type="bidirectional"/>
+        <pin num="23" name="A4_SDA" type="bidirectional"/>
+        <pin num="24" name="A5_SCL" type="bidirectional"/>
+        <pin num="25" name="A6" type="bidirectional"/>
+        <pin num="26" name="A7" type="bidirectional"/>
+        <pin num="27" name="+5V" type="power_out"/>
+        <pin num="28" name="~{RESET}" type="input"/>
+        <pin num="29" name="GND" type="power_in"/>
+        <pin num="30" name="VIN" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="Simulation_SPICE" part="NMOS">
+      <description>N-MOSFET transistor, drain/source/gate</description>
+      <docs>https://ngspice.sourceforge.io/docs/ngspice-manual.pdf</docs>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">NMOS</field>
+        <field name="Datasheet">https://ngspice.sourceforge.io/docs/ngspice-manual.pdf</field>
+        <field name="Sim.Device">NMOS</field>
+        <field name="Sim.Type">VDMOS</field>
+        <field name="Sim.Pins">1=D 2=G 3=S</field>
+      </fields>
+      <pins>
+        <pin num="1" name="D" type="passive"/>
+        <pin num="2" name="G" type="input"/>
+        <pin num="3" name="S" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Simulation_SPICE" part="PMOS">
+      <description>P-MOSFET transistor, drain/source/gate</description>
+      <docs>https://ngspice.sourceforge.io/docs/ngspice-manual.pdf</docs>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">PMOS</field>
+        <field name="Datasheet">https://ngspice.sourceforge.io/docs/ngspice-manual.pdf</field>
+        <field name="Sim.Device">PMOS</field>
+        <field name="Sim.Type">VDMOS</field>
+        <field name="Sim.Pins">1=D 2=G 3=S</field>
+      </fields>
+      <pins>
+        <pin num="1" name="D" type="passive"/>
+        <pin num="2" name="G" type="input"/>
+        <pin num="3" name="S" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Switch" part="SW_Push">
+      <description>Push button switch, generic, two pins</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">SW_Push</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Switch" part="SW_SPST">
+      <description>Single Pole Single Throw (SPST) switch</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">SW_SPST</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="BQ7692003PW">
+      <uri>/Users/sp4c38/Library/Mobile Documents/com~apple~CloudDocs/Personal/Interests/Projects/Powerbank/Circuit/KiCAD Circuit/Libraries/BQ7692003PW/KiCADv6/2024-01-11_15-46-17.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Device.kicad_sym</uri>
+    </library>
+    <library logical="MCU_Module">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//MCU_Module.kicad_sym</uri>
+    </library>
+    <library logical="Simulation_SPICE">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Simulation_SPICE.kicad_sym</uri>
+    </library>
+    <library logical="Switch">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Switch.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="C7" pin="2" pintype="passive"/>
+      <node ref="C9" pin="2" pintype="passive"/>
+      <node ref="CELL_3" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="Cc3" pin="2" pintype="passive"/>
+      <node ref="Cc4" pin="1" pintype="passive"/>
+      <node ref="Cf1" pin="2" pintype="passive"/>
+      <node ref="Q2" pin="2" pinfunction="G" pintype="input"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="Rc4" pin="1" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="VSS" pintype="power_in"/>
+      <node ref="U2" pin="29" pinfunction="GND" pintype="power_in"/>
+      <node ref="U2" pin="4" pinfunction="GND" pintype="power_in"/>
+    </net>
+    <net code="2" name="Net-(C6-Pad2)">
+      <node ref="C6" pin="2" pintype="passive"/>
+      <node ref="C8" pin="1" pintype="passive"/>
+    </net>
+    <net code="3" name="Net-(C10-Pad1)">
+      <node ref="C10" pin="1" pintype="passive"/>
+      <node ref="C11" pin="2" pintype="passive"/>
+    </net>
+    <net code="4" name="Net-(CELL_1--)">
+      <node ref="CELL_1" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="CELL_2" pin="1" pinfunction="+" pintype="passive"/>
+      <node ref="Rc2" pin="1" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(CELL_2--)">
+      <node ref="CELL_2" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="CELL_3" pin="1" pinfunction="+" pintype="passive"/>
+      <node ref="Rc3" pin="1" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(D1-K)">
+      <node ref="D1" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="Rd1" pin="2" pintype="passive"/>
+      <node ref="Rf1" pin="1" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(D3-K)">
+      <node ref="D3" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="Rd2" pin="2" pintype="passive"/>
+      <node ref="SW2" pin="2" pinfunction="B" pintype="passive"/>
+    </net>
+    <net code="8" name="Net-(Q1-D)">
+      <node ref="Q1" pin="1" pinfunction="D" pintype="passive"/>
+      <node ref="Q3" pin="1" pinfunction="D" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(Q1-G)">
+      <node ref="Q1" pin="2" pinfunction="G" pintype="input"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="DSG" pintype="output"/>
+    </net>
+    <net code="10" name="Net-(Q1-S)">
+      <node ref="C6" pin="1" pintype="passive"/>
+      <node ref="Q1" pin="3" pinfunction="S" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(Q2-D)">
+      <node ref="Q2" pin="1" pinfunction="D" pintype="passive"/>
+      <node ref="Q3" pin="2" pinfunction="G" pintype="input"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(Q2-S)">
+      <node ref="Q2" pin="3" pinfunction="S" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="CHG" pintype="output"/>
+    </net>
+    <net code="13" name="Net-(R5-Pad1)">
+      <node ref="R5" pin="1" pintype="passive"/>
+      <node ref="SW1" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(SW2-A)">
+      <node ref="SW2" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="U2" pin="30" pinfunction="VIN" pintype="power_in"/>
+    </net>
+    <net code="15" name="Net-(U1-ALERT)">
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U1" pin="20" pinfunction="ALERT" pintype="bidirectional"/>
+      <node ref="U2" pin="13" pinfunction="D10" pintype="bidirectional"/>
+    </net>
+    <net code="16" name="Net-(U1-BAT)">
+      <node ref="Cf1" pin="1" pintype="passive"/>
+      <node ref="Rf1" pin="2" pintype="passive"/>
+      <node ref="U1" pin="10" pinfunction="BAT" pintype="power_in"/>
+      <node ref="U1" pin="9" pinfunction="REGSRC" pintype="power_in"/>
+    </net>
+    <net code="17" name="Net-(U1-CAP1)">
+      <node ref="C7" pin="1" pintype="passive"/>
+      <node ref="U1" pin="7" pinfunction="CAP1" pintype="output"/>
+    </net>
+    <net code="18" name="Net-(U1-REGOUT)">
+      <node ref="C9" pin="1" pintype="passive"/>
+      <node ref="U1" pin="8" pinfunction="REGOUT" pintype="power_out"/>
+    </net>
+    <net code="19" name="Net-(U1-SCL)">
+      <node ref="U1" pin="5" pinfunction="SCL" pintype="input"/>
+      <node ref="U2" pin="24" pinfunction="A5_SCL" pintype="bidirectional"/>
+    </net>
+    <net code="20" name="Net-(U1-SDA)">
+      <node ref="U1" pin="4" pinfunction="SDA" pintype="bidirectional"/>
+      <node ref="U2" pin="23" pinfunction="A4_SDA" pintype="bidirectional"/>
+    </net>
+    <net code="21" name="Net-(U1-SRN)">
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="U1" pin="19" pinfunction="SRN" pintype="input"/>
+    </net>
+    <net code="22" name="Net-(U1-SRP)">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="U1" pin="18" pinfunction="SRP" pintype="input"/>
+    </net>
+    <net code="23" name="Net-(U1-TS1)">
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="TS1" pintype="input"/>
+    </net>
+    <net code="24" name="Net-(U1-VC0)">
+      <node ref="Cc4" pin="2" pintype="passive"/>
+      <node ref="Rc4" pin="2" pintype="passive"/>
+      <node ref="U1" pin="17" pinfunction="VC0" pintype="input"/>
+    </net>
+    <net code="25" name="Net-(U1-VC1)">
+      <node ref="Cc2" pin="2" pintype="passive"/>
+      <node ref="Cc3" pin="1" pintype="passive"/>
+      <node ref="Rc3" pin="2" pintype="passive"/>
+      <node ref="SW1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U1" pin="16" pinfunction="VC1" pintype="input"/>
+    </net>
+    <net code="26" name="Net-(U1-VC2)">
+      <node ref="Cc1" pin="2" pintype="passive"/>
+      <node ref="Cc2" pin="1" pintype="passive"/>
+      <node ref="Rc2" pin="2" pintype="passive"/>
+      <node ref="U1" pin="13" pinfunction="VC4" pintype="input"/>
+      <node ref="U1" pin="14" pinfunction="VC3" pintype="input"/>
+      <node ref="U1" pin="15" pinfunction="VC2" pintype="input"/>
+    </net>
+    <net code="27" name="Net-(U1-VC5)">
+      <node ref="Cc1" pin="1" pintype="passive"/>
+      <node ref="Rc1" pin="2" pintype="passive"/>
+      <node ref="U1" pin="12" pinfunction="VC5" pintype="input"/>
+    </net>
+    <net code="28" name="PACK +">
+      <node ref="C10" pin="2" pintype="passive"/>
+      <node ref="CELL_1" pin="1" pinfunction="+" pintype="passive"/>
+      <node ref="D1" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="D2" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="D3" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="Rc1" pin="1" pintype="passive"/>
+      <node ref="Rd1" pin="1" pintype="passive"/>
+      <node ref="Rd2" pin="1" pintype="passive"/>
+    </net>
+    <net code="29" name="PACK -">
+      <node ref="C11" pin="1" pintype="passive"/>
+      <node ref="C8" pin="2" pintype="passive"/>
+      <node ref="D2" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="Q3" pin="3" pinfunction="S" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+    </net>
+    <net code="30" name="unconnected-(U1-NC-Pad11)">
+      <node ref="U1" pin="11" pinfunction="NC" pintype="unspecified+no_connect"/>
+    </net>
+    <net code="31" name="unconnected-(U2-+5V-Pad27)">
+      <node ref="U2" pin="27" pinfunction="+5V" pintype="power_out+no_connect"/>
+    </net>
+    <net code="32" name="unconnected-(U2-3V3-Pad17)">
+      <node ref="U2" pin="17" pinfunction="3V3" pintype="power_out+no_connect"/>
+    </net>
+    <net code="33" name="unconnected-(U2-A0-Pad19)">
+      <node ref="U2" pin="19" pinfunction="A0" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="34" name="unconnected-(U2-A1-Pad20)">
+      <node ref="U2" pin="20" pinfunction="A1" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="35" name="unconnected-(U2-A2-Pad21)">
+      <node ref="U2" pin="21" pinfunction="A2" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="36" name="unconnected-(U2-A3-Pad22)">
+      <node ref="U2" pin="22" pinfunction="A3" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="37" name="unconnected-(U2-A6-Pad25)">
+      <node ref="U2" pin="25" pinfunction="A6" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="38" name="unconnected-(U2-A7-Pad26)">
+      <node ref="U2" pin="26" pinfunction="A7" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="39" name="unconnected-(U2-AREF-Pad18)">
+      <node ref="U2" pin="18" pinfunction="AREF" pintype="input+no_connect"/>
+    </net>
+    <net code="40" name="unconnected-(U2-D0{slash}RX-Pad2)">
+      <node ref="U2" pin="2" pinfunction="D0/RX" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="41" name="unconnected-(U2-D1{slash}TX-Pad1)">
+      <node ref="U2" pin="1" pinfunction="D1/TX" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="42" name="unconnected-(U2-D2-Pad5)">
+      <node ref="U2" pin="5" pinfunction="D2" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="43" name="unconnected-(U2-D3-Pad6)">
+      <node ref="U2" pin="6" pinfunction="D3" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="44" name="unconnected-(U2-D4-Pad7)">
+      <node ref="U2" pin="7" pinfunction="D4" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="45" name="unconnected-(U2-D5-Pad8)">
+      <node ref="U2" pin="8" pinfunction="D5" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="46" name="unconnected-(U2-D6-Pad9)">
+      <node ref="U2" pin="9" pinfunction="D6" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="47" name="unconnected-(U2-D7-Pad10)">
+      <node ref="U2" pin="10" pinfunction="D7" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="48" name="unconnected-(U2-D8-Pad11)">
+      <node ref="U2" pin="11" pinfunction="D8" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="49" name="unconnected-(U2-D9-Pad12)">
+      <node ref="U2" pin="12" pinfunction="D9" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="50" name="unconnected-(U2-D11-Pad14)">
+      <node ref="U2" pin="14" pinfunction="D11" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="51" name="unconnected-(U2-D12-Pad15)">
+      <node ref="U2" pin="15" pinfunction="D12" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="52" name="unconnected-(U2-D13-Pad16)">
+      <node ref="U2" pin="16" pinfunction="D13" pintype="bidirectional+no_connect"/>
+    </net>
+    <net code="53" name="unconnected-(U2-~{RESET}-Pad3)">
+      <node ref="U2" pin="3" pinfunction="~{RESET}" pintype="input+no_connect"/>
+    </net>
+    <net code="54" name="unconnected-(U2-~{RESET}-Pad28)">
+      <node ref="U2" pin="28" pinfunction="~{RESET}" pintype="input+no_connect"/>
+    </net>
+  </nets>
+</export>

@@ -2,6 +2,6 @@
   (version 7)
   (lib (name "Custom Parts")(type "KiCad")(uri "${KIPRJMOD}/Custom Parts.kicad_sym")(options "")(descr ""))
   (lib (name "MC7805ACTG")(type "KiCad")(uri "${KIPRJMOD}/Libraries/ul_MC7805ACTG/KiCADv6/2023-11-19_11-07-24.kicad_sym")(options "")(descr ""))
-  (lib (name "BQ2692006PWR")(type "KiCad")(uri "${KIPRJMOD}/Libraries/ul_BQ7692006PWR/KiCADv6/BQ2692006PWR.kicad_sym")(options "")(descr ""))
   (lib (name "AZ1117CH-5.0TRG1")(type "KiCad")(uri "${KIPRJMOD}/Libraries/5V Regulator/KiCADv6/AZ1117CH-5_0TRG1.kicad_sym")(options "")(descr ""))
+  (lib (name "BQ7692003PW")(type "KiCad")(uri "${KIPRJMOD}/Libraries/BQ7692003PW/KiCADv6/2024-01-11_15-46-17.kicad_sym")(options "")(descr ""))
 )
