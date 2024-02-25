@@ -1,0 +1,16 @@
+.IRLB4132PBF :1 ;MOSFET TRENCH <= 40V HEXFET Power MOSFET TO-220AB
+TO254P483X1016X1994-3P
+*STM Q
+*NGS
+*PLB 1="G" 2="D" 3="S"
+*MXP 3
+*DFN IRLB4132PBF
+~!Mouser Part Number (942-IRLB4132PBF)
+~!Link Mouser Price/Stock (https://www.mouser.co.uk/ProductDetail/Infineon-Technologies/IRLB4132PBF?qs=7jf4hlN%252BSJAw3gjmC05T%2Fw%3D%3D)
+~!Manufacturer_Name (Infineon)
+~!Manufacturer_Part_Number (IRLB4132PBF)
+~!Link Datasheet (https://4donline.ihs.com/images/VipMasterIC/IC/INFN/INFN-S-A0008993592/INFN-S-A0008993592-1.pdf?hkey=6D3A4C79FDBF58556ACFDE234799DDF0)
+~!Height (4.83mm)
+~!3D_Model (IRLB4132PBF)
+IRLB4132PBF
+1.1!U 2.1!U 3.1!U 

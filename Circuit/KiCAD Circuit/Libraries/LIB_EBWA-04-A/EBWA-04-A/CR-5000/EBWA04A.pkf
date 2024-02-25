@@ -1,0 +1,10 @@
+(unit MM)
+
+(package "EBWA04A"
+    (type UNDEF)
+    (uver 2)
+    (mountForm default
+        (footprintRef "EBWA04A")
+        (spec "default")
+    )
+)

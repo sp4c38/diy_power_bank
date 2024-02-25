@@ -1,0 +1,70 @@
+(Japanese_coding: sjis)
+(function "ECS_650349"
+    (uver 1)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (ctime 2018-07-02-16:43:46)
+    (utime 2023-03-07-16:10:32)
+    (interface
+        (port "1" (symbPinId 1) (portType INOUT))
+        (port "2" (symbPinId 2) (portType INOUT))
+        (port "3" (symbPinId 3) (portType INOUT))
+    )
+    (property "symbolName" "IRF9Z24NPBF")
+)
+
+
+(pinAssign "ECS_650349"
+    (uver 1)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (ctime 2018-07-02-16:43:46)
+    (utime 2023-03-07-16:10:32)
+    (interface
+        (port "1" (symbPinId 1) (portName "G") (portType INOUT))
+        (port "2" (symbPinId 2) (portName "D") (portType INOUT))
+        (port "3" (symbPinId 3) (portName "S") (portType INOUT))
+    )
+    (internal
+        (funcInst (functionRef "ECS_650349")
+                (port "1" (match "1"))
+                (port "2" (match "2"))
+                (port "3" (match "3"))
+        )
+    )
+    (property "usePowerBox" "No")
+    (property "symbolName" "IRF9Z24NPBF")
+)
+
+
+(part "IRF9Z24NPBF"
+    (uver 1)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (ctime 2018-07-02-16:43:46)
+    (utime 2023-03-07-16:10:32)
+    (packageRef "IRF9Z24NPBF")
+    (pinAssignRef "ECS_650349")
+    (interface
+        (port "1" (symbPinId 1) (portName "G") (portType INOUT))
+        (port "2" (symbPinId 2) (portName "D") (portType INOUT))
+        (port "3" (symbPinId 3) (portName "S") (portType INOUT))
+    )
+    (partClass UNDEF)
+    (useInSchema Y)
+    (useInLayout Y)
+    (inPartsList Y)
+    (partType NORMAL)
+    (placeRestriction FREE)
+    (property "enetNonSeries" "YES")
+    (property "refDesPrefix" "Q")
+    (property "description" "Infineon IRF9Z24NPBF P-channel MOSFET Transistor, 12 A, 55 V, 3-Pin TO-220AB")
+    (property "Mouser_Part_Number" "942-IRF9Z24NPBF")
+    (property "Mouser_Price/Stock" "https://www.mouser.co.uk/ProductDetail/Infineon-IR/IRF9Z24NPBF?qs=9%252BKlkBgLFf36xC9PMFW8Lg%3D%3D")
+    (property "Manufacturer_Name" "Infineon")
+    (property "Manufacturer_Part_Number" "IRF9Z24NPBF")
+    (property "Datasheet_Link" "https://www.infineon.com/dgdl/irf9z24npbf.pdf?fileId=5546d462533600a40153561218961ddb")
+    (property "compAreaTopHeight" 4.69)
+)
+
+

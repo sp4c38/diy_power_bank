@@ -44,7 +44,7 @@
     (stroke (width 0.0254) (type solid)) (fill none) (layer "F.Fab") (tstamp d3872038-bab0-48f2-9bdf-8c9bab920275))
   (pad "1" thru_hole circle (at 0 0) (size 1.3716 1.3716) (drill 0.8636) (layers "*.Cu" "*.Mask") (tstamp ad69828e-d084-4a4e-9c99-7b123af4e486))
   (pad "2" thru_hole circle (at 5 0) (size 1.3716 1.3716) (drill 0.8636) (layers "*.Cu" "*.Mask") (tstamp e04b9e4e-8990-41bd-91c9-43ed62ae3f16))
-  (model "${KIPRJMOD}/Libraries/ceramic-cap-5mm-lead-spacing-4mm-width-5-5mm-height-1/Ceramic Cap, 5mm lead spacing, 4mm width, and 5.5mm tall, v4.step"
+  (model "${KIPRJMOD}/Libraries/Custom 3D Models/Ceramic Cap, 5mm lead spacing, 4mm width, and 5.5mm tall, v4.step"
     (offset (xyz 0.5 1.25 1.5))
     (scale (xyz 1 1 1))
     (rotate (xyz -90 0 0))

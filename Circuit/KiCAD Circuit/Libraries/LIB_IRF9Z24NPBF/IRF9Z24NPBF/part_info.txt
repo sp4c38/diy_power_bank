@@ -1,0 +1,9 @@
+Manufacturer=Infineon
+PartNumber=IRF9Z24NPBF
+PartCategory=MOSFET (P-Channel)
+PackageCategory=Transistor Outline, Vertical
+PinCount=3
+Version=1.1
+Released=2018-07-02 16:43:46
+Downloaded=2024-01-15 19:52:24
+3D=Y

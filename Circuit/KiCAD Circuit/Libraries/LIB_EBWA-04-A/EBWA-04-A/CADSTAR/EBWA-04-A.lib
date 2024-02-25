@@ -1,0 +1,16 @@
+.EBWA-04-A :1 ;4 Position Wire to Board Terminal Block Horizontal with Board 0.138" (3.50mm) Through Hole 
+EBWA04A
+*STM J
+*NGS
+*PLB 1="1" 2="2" 3="3" 4="4"
+*MXP 4
+*DFN EBWA-04-A
+~!Mouser Part Number (-)
+~!Mouser Price/Stock (-)
+~!Manufacturer_Name (Adam Tech)
+~!Manufacturer_Part_Number (EBWA-04-A)
+~!Link Datasheet (https://app.adam-tech.com/products/download/data_sheet/204239/ebwa-xx-a-data-sheet.pdf)
+~!Height (8.89mm)
+~!3D_Model (EBWA-04-A)
+EBWA-04-A
+1.1!U 2.1!U 3.1!U 4.1!U 

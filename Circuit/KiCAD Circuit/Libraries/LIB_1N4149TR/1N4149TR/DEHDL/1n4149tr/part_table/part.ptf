@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART '1N4149TR'
+CLASS = DISCRETE
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "MOUSER_PART_NUMBER", "MOUSER_PRICE/STOCK", "DESCRIPTION", "DATASHEET";
+{========================================================================================}
+ "onsemi", "1N4149TR" (!) = "", "DIOAD1068W53L380D172", "Diodes, Axial Diameter Horizontal Mounting", "512-1N4149TR", "https://www.mouser.co.uk/ProductDetail/ON-Semiconductor-Fairchild/1N4149TR/?qs=VZOZQ19d7%2FIpYVTk5v1ckw%3D%3D", "ON SEMICONDUCTOR - 1N4149TR - DIODE, SMALL SIGNAL, 100V, DO-204AH", "http://www.onsemi.com/pub/Collateral/1N4149-D.pdf"
+END_PART
+
+END.

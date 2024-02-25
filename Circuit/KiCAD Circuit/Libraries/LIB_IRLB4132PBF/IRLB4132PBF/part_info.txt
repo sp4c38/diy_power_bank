@@ -1,0 +1,9 @@
+Manufacturer=Infineon
+PartNumber=IRLB4132PBF
+PartCategory=MOSFET (N-Channel)
+PackageCategory=Transistor Outline, Vertical
+PinCount=3
+Version=1.1
+Released=2021-04-20 05:21:14
+Downloaded=2024-01-17 11:52:58
+3D=Y

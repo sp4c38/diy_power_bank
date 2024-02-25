@@ -22,8 +22,6 @@
     (stroke (width 0.1524) (type solid)) (layer "F.SilkS") (tstamp 948f6f54-f66b-47ce-bc5f-16ed2cce48f1))
   (fp_line (start 6.477 1.3335) (end 6.477 -1.3335)
     (stroke (width 0.1524) (type solid)) (layer "F.SilkS") (tstamp 60ae3723-833b-4abb-bbc3-a491835621f8))
-  (fp_circle (center -1.5367 0) (end -1.4605 0)
-    (stroke (width 0.1524) (type solid)) (fill none) (layer "F.SilkS") (tstamp 4182af3a-c4e8-4988-a349-02f0184ac865))
   (fp_line (start -0.9017 -0.9017) (end 1.778 -0.9017)
     (stroke (width 0.1524) (type solid)) (layer "F.CrtYd") (tstamp 475a93ac-a34d-4a8f-bd4e-28552373a068))
   (fp_line (start -0.9017 0.9017) (end -0.9017 -0.9017)
@@ -64,7 +62,7 @@
     (stroke (width 0.0254) (type solid)) (fill none) (layer "F.Fab") (tstamp f8a97a0f-65e3-4acb-906d-a3a6f26da18e))
   (pad "1" thru_hole rect (at 0 0) (size 1.2954 1.2954) (drill 0.7874) (layers "*.Cu" "*.Mask") (tstamp e12987de-2520-4511-872d-450f790cdf5c))
   (pad "2" thru_hole circle (at 8.382 0) (size 1.2954 1.2954) (drill 0.7874) (layers "*.Cu" "*.Mask") (tstamp 6ee18a4e-2dec-4112-83da-86f6ae0ebcf2))
-  (model "${KIPRJMOD}/Libraries/Ceramic Capacitor 3D Models/cdisk_p8x1_d9_th5.stp"
+  (model "${KIPRJMOD}/Libraries/Custom 3D Models/cdisk_p8x1_d9_th5.stp"
     (offset (xyz 4.25 0 1))
     (scale (xyz 1 1 1))
     (rotate (xyz -90 0 7))

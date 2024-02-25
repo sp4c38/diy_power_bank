@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'EBWA_04_A'
+CLASS = IO
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "MOUSER_PART_NUMBER", "MOUSER_PRICE/STOCK", "DESCRIPTION", "DATASHEET", "HEIGHT";
+{========================================================================================}
+ "Adam Tech", "EBWA-04-A" (!) = "", "EBWA04A", "Other", "", "", "4 Position Wire to Board Terminal Block Horizontal with Board 0.138" (3.50mm) Through Hole ", "https://app.adam-tech.com/products/download/data_sheet/204239/ebwa-xx-a-data-sheet.pdf", "8.89 mm"
+END_PART
+
+END.

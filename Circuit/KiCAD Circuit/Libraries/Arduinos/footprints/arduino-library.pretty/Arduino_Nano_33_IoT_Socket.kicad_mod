@@ -140,4 +140,9 @@
   (pad "RST1" thru_hole circle (at -7.62 -34.29) (size 1.7272 1.7272) (drill 1.016) (layers "*.Cu" "*.Mask") (tstamp 721dc120-d2b1-4529-b5c7-2d90b7a388c3))
   (pad "RST2" thru_hole circle (at 7.62 -34.29) (size 1.7272 1.7272) (drill 1.016) (layers "*.Cu" "*.Mask") (tstamp ae82f309-402e-4657-b272-ea427c334fca))
   (pad "VIN" thru_hole circle (at 7.62 -39.37) (size 1.7272 1.7272) (drill 1.016) (layers "*.Cu" "*.Mask") (tstamp 7568bbf6-01b0-4c37-b5c9-536d0246c1f9))
+  (model "${KIPRJMOD}/Libraries/Custom 3D Models/Nano33BLE/Nano33BLE.step"
+    (offset (xyz 8.9 0 0))
+    (scale (xyz 1 1 1))
+    (rotate (xyz 0 0 -90))
+  )
 )

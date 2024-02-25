@@ -4,4 +4,6 @@
   (lib (name "MC7805ACTG")(type "KiCad")(uri "${KIPRJMOD}/Libraries/ul_MC7805ACTG/KiCADv6/2023-11-19_11-07-24.kicad_sym")(options "")(descr ""))
   (lib (name "AZ1117CH-5.0TRG1")(type "KiCad")(uri "${KIPRJMOD}/Libraries/5V Regulator/KiCADv6/AZ1117CH-5_0TRG1.kicad_sym")(options "")(descr ""))
   (lib (name "BQ7692003PW")(type "KiCad")(uri "${KIPRJMOD}/Libraries/BQ7692003PW/KiCADv6/2024-01-11_15-46-17.kicad_sym")(options "")(descr ""))
+  (lib (name "Arduinos")(type "KiCad")(uri "${KIPRJMOD}/Libraries/Arduinos/symbols/arduino-library.kicad_sym")(options "")(descr ""))
+  (lib (name "EBWA-04-A")(type "KiCad")(uri "${KIPRJMOD}/Libraries/LIB_EBWA-04-A/EBWA-04-A/KiCad/EBWA-04-A.kicad_sym")(options "")(descr ""))
 )

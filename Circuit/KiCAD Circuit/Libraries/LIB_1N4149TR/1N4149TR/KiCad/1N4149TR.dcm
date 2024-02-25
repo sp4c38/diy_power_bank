@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 1N4149TR
+D ON SEMICONDUCTOR - 1N4149TR - DIODE, SMALL SIGNAL, 100V, DO-204AH
+K
+F http://www.onsemi.com/pub/Collateral/1N4149-D.pdf
+$ENDCMP
+#
+#End Doc Library

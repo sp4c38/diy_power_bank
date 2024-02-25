@@ -48,7 +48,7 @@
     (stroke (width 0.0254) (type solid)) (fill none) (layer "F.Fab") (tstamp b10d9146-0191-4bd2-8bf9-ba53a56cf402))
   (pad "1" thru_hole circle (at 0 0) (size 1.3716 1.3716) (drill 0.8636) (layers "*.Cu" "*.Mask") (tstamp 07e52e68-894a-488d-b6f1-f5c0f59444b7))
   (pad "2" thru_hole circle (at 2.5 0) (size 1.3716 1.3716) (drill 0.8636) (layers "*.Cu" "*.Mask") (tstamp 1e3b729e-f333-428f-8b75-b8b6ffac755e))
-  (model "${KIPRJMOD}/Libraries/Ceramic Capacitor 3D Models/User Library-FK18X5R1E474K.STEP"
+  (model "${KIPRJMOD}/Libraries/Custom 3D Models/User Library-FK18X5R1E474K.STEP"
     (offset (xyz 1.25 0 0.5))
     (scale (xyz 1 1 1))
     (rotate (xyz 90 180 0))

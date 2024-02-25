@@ -1,0 +1,13 @@
+(unit MM)
+
+(package "EBWA-04-A"
+    (type UNDEF)
+    (uver 2)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (utime 2022-12-01-15:25:20)
+    (mountForm default
+        (footprintRef "EBWA04A")
+        (spec "System")
+    )
+)

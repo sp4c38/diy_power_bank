@@ -1,0 +1,9 @@
+Manufacturer=Adam Tech
+PartNumber=EBWA-04-A
+PartCategory=Connector
+PackageCategory=Other
+PinCount=4
+Version=1.5
+Released=2022-12-01 15:25:20
+Downloaded=2024-02-23 10:39:44
+3D=Y
