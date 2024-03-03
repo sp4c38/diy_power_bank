@@ -37,15 +37,15 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 1.8,
-          "height": 1.8,
-          "width": 1.8
+          "drill": 0.85,
+          "height": 1.65,
+          "width": 1.65
         },
-        "silk_line_width": 0.15,
+        "silk_line_width": 0.19999999999999998,
         "silk_text_italic": false,
         "silk_text_size_h": 1.0,
         "silk_text_size_v": 1.0,
-        "silk_text_thickness": 0.15,
+        "silk_text_thickness": 0.19999999999999998,
         "silk_text_upright": false,
         "zones": {
           "min_clearance": 0.5
@@ -76,7 +76,7 @@
         "extra_footprint": "warning",
         "footprint": "error",
         "footprint_symbol_mismatch": "warning",
-        "footprint_type_mismatch": "ignore",
+        "footprint_type_mismatch": "warning",
         "hole_clearance": "error",
         "hole_near_hole": "error",
         "invalid_outline": "error",
@@ -85,15 +85,15 @@
         "items_not_allowed": "error",
         "length_out_of_range": "error",
         "lib_footprint_issues": "warning",
-        "lib_footprint_mismatch": "warning",
+        "lib_footprint_mismatch": "ignore",
         "malformed_courtyard": "error",
         "microvia_drill_out_of_range": "error",
-        "missing_courtyard": "ignore",
+        "missing_courtyard": "warning",
         "missing_footprint": "warning",
         "net_conflict": "warning",
-        "npth_inside_courtyard": "ignore",
+        "npth_inside_courtyard": "warning",
         "padstack": "warning",
-        "pth_inside_courtyard": "ignore",
+        "pth_inside_courtyard": "warning",
         "shorting_items": "error",
         "silk_edge_clearance": "warning",
         "silk_over_copper": "warning",
@@ -469,7 +469,7 @@
       },
       {
         "bus_width": 12,
-        "clearance": 0.3,
+        "clearance": 0.2,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -480,7 +480,7 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.14,
-        "via_diameter": 1.2,
+        "via_diameter": 1.4,
         "via_drill": 0.4,
         "wire_width": 6
       },
@@ -503,7 +503,7 @@
       },
       {
         "bus_width": 12,
-        "clearance": 0.15,
+        "clearance": 0.2,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -528,8 +528,9 @@
       "Net-(A1-A4{slash}SDA)": "I2C Signal",
       "Net-(A1-A5{slash}SCL)": "I2C Signal",
       "Net-(C6-Pad2)": "High Power",
-      "Net-(D1-A)": "High Power",
+      "Net-(D1-A)": "General",
       "Net-(D1-K)": "General",
+      "Net-(D3-K)": "High Power",
       "Net-(Q1-D)": "High Power",
       "Net-(Q1-G)": "General",
       "Net-(Q1-S)": "High Power",
@@ -548,7 +549,8 @@
       "Net-(U1-VC0)": "General",
       "Net-(U1-VC1)": "General",
       "Net-(U1-VC2)": "General",
-      "Net-(U1-VC5)": "General"
+      "Net-(U1-VC5)": "General",
+      "Net-(U1-VSS)": "General"
     },
     "netclass_patterns": []
   },

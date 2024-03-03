@@ -1,4 +1,4 @@
-23135179091134020
+23138617276199569
 14AFR008E
 RES_14A_OHM
 
@@ -53956,6 +53956,13 @@ MOSFET (P-Channel)
 3
 3
 Custom Footprints
+NetTie General Net Class
+Net tie, 2 pin, 0.5mm square SMD pads
+net tie
+0
+2
+2
+Custom Footprints
 Power Connection Pads
 
 
@@ -53969,6 +53976,13 @@ Switch Pads
 0
 2
 2
+Custom Footprints
+TO-92_MC_MCH
+
+VP3203N3-G 
+0
+3
+3
 Diode_SMD
 D_0201_0603Metric
 Diode SMD 0201 (0603 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: https://www.vishay.com/docs/20052/crcw0201e3.pdf), generated with kicad-footprint-generator
@@ -88137,6 +88151,13 @@ Logo CE certification
 0
 0
 Symbol
+Do Not Touch Symbol
+
+
+0
+0
+0
+Symbol
 ESD-Logo_6.6x6mm_SilkScreen
 Electrostatic discharge Logo
 Logo ESD
@@ -93988,13 +94009,6 @@ igbt diode module
 0
 25
 25
-VP3203N3-G
-TO-92_MC_MCH
-
-VP3203N3-G 
-0
-3
-3
 Valve
 Valve_ECC-83-1
 Valve ECC-83-1 round pins

@@ -15,5 +15,4 @@
   (lib (name "FG24X7R1E475KRT06")(type "KiCad")(uri "${KIPRJMOD}/Libraries/ul_FG24X7R1E475KRT06/KiCADv6/footprints.pretty")(options "")(descr ""))
   (lib (name "FG18X5R1E225KRT06")(type "KiCad")(uri "${KIPRJMOD}/Libraries/ul_FG18X5R1E225KRT06/KiCADv6/footprints.pretty")(options "")(descr ""))
   (lib (name "C410C472K1R5TA")(type "KiCad")(uri "${KIPRJMOD}/Libraries/ul_C410C472K1R5TA/KiCADv6/footprints.pretty")(options "")(descr ""))
-  (lib (name "VP3203N3-G")(type "KiCad")(uri "${KIPRJMOD}/Libraries/ul_VP3203N3-G/KiCADv6/footprints.pretty")(options "")(descr ""))
 )
