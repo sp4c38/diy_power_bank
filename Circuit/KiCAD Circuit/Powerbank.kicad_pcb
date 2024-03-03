@@ -197,7 +197,7 @@
 				)
 			)
 		)
-		(property "Value" "2.2μF"
+		(property "Value" "2.2uF"
 			(at 1.25 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -816,7 +816,7 @@
 				)
 			)
 		)
-		(property "Value" "1MΩ"
+		(property "Value" "1M"
 			(at 5.842 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3769,7 +3769,7 @@
 		)
 		(fp_arc
 			(start 2.199991 3.050012)
-			(mid 2.141408 3.191422)
+			(mid 2.141406 3.191427)
 			(end 1.999991 3.250011)
 			(stroke
 				(width 0.127)
@@ -4169,7 +4169,7 @@
 				)
 			)
 		)
-		(property "Value" "100Ω"
+		(property "Value" "100"
 			(at 6.096 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4515,7 +4515,7 @@
 				)
 			)
 		)
-		(property "Value" "1μF"
+		(property "Value" "1uF"
 			(at 2.5 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4803,7 +4803,7 @@
 				)
 			)
 		)
-		(property "Value" "50Ω"
+		(property "Value" "50"
 			(at 6.477 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5149,7 +5149,7 @@
 				)
 			)
 		)
-		(property "Value" "499kΩ"
+		(property "Value" "499k"
 			(at 5.842 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5198,7 +5198,7 @@
 			)
 		)
 		(property "Mouser" "603-MFR-25FBF52-499K"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "bf98d4d2-aa4f-4adf-8939-bc856f5b8ef9")
@@ -6382,7 +6382,7 @@
 				)
 			)
 		)
-		(property "Value" "10kΩ"
+		(property "Value" "10k"
 			(at 3.937 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6728,7 +6728,7 @@
 				)
 			)
 		)
-		(property "Value" "50Ω"
+		(property "Value" "50"
 			(at 6.477 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7074,7 +7074,7 @@
 				)
 			)
 		)
-		(property "Value" "4.7μF"
+		(property "Value" "4.7uF"
 			(at 2.5 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7342,7 +7342,7 @@
 				)
 			)
 		)
-		(property "Value" "0.1μF"
+		(property "Value" "0.1uF"
 			(at 2.499995 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7745,7 +7745,7 @@
 				)
 			)
 		)
-		(property "Value" "1MΩ"
+		(property "Value" "1M"
 			(at 5.842 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8984,7 +8984,7 @@
 		(descr "KiCad Logo")
 		(tags "Logo KiCad")
 		(property "Reference" "REF1"
-			(at 0 -5.08 360)
+			(at 0 -5.08 0)
 			(layer "F.SilkS")
 			(hide yes)
 			(uuid "5975167a-f029-4ee3-80c7-8a6adadf9c2f")
@@ -8996,7 +8996,7 @@
 			)
 		)
 		(property "Value" "KiCad-Logo2_5mm_SilkScreen"
-			(at 0 5.08 360)
+			(at 0 5.08 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "e2d9c394-ed50-48a8-8e2b-d4aa00a1ff40")
@@ -9867,7 +9867,7 @@
 			)
 		)
 		(property "Mouser" "594-K471K10X7RF5UH5"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ebeb41be-04da-4d27-9e24-d8320c5c1c37")
@@ -10106,7 +10106,7 @@
 				)
 			)
 		)
-		(property "Value" "10kΩ"
+		(property "Value" "10k"
 			(at 3.937 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10745,7 +10745,7 @@
 				)
 			)
 		)
-		(property "Value" "1μF"
+		(property "Value" "1uF"
 			(at 2.5 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11379,7 +11379,7 @@
 				)
 			)
 		)
-		(property "Value" "1μF"
+		(property "Value" "1uF"
 			(at 2.5 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11439,7 +11439,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/7d3eec1c-ee63-4178-aa87-84d82b888b37")
+		(sheetname "Root")
+		(sheetfile "Powerbank.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.1289 -1.7272)
@@ -11653,7 +11656,7 @@
 				)
 			)
 		)
-		(property "Value" "10kΩ"
+		(property "Value" "10k"
 			(at 3.937 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12251,7 +12254,7 @@
 				)
 			)
 		)
-		(property "Value" "100Ω"
+		(property "Value" "100"
 			(at 6.096 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12597,7 +12600,7 @@
 				)
 			)
 		)
-		(property "Value" "8mΩ"
+		(property "Value" "8m"
 			(at 12.192 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12943,7 +12946,7 @@
 				)
 			)
 		)
-		(property "Value" "0.1μF"
+		(property "Value" "0.1uF"
 			(at 2.499995 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14251,7 +14254,7 @@
 				)
 			)
 		)
-		(property "Value" "50Ω"
+		(property "Value" "50"
 			(at 6.477 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15043,7 +15046,7 @@
 				)
 			)
 		)
-		(property "Value" "10kΩ"
+		(property "Value" "10k"
 			(at 3.937 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15389,7 +15392,7 @@
 				)
 			)
 		)
-		(property "Value" "50Ω"
+		(property "Value" "50"
 			(at 6.477 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15735,7 +15738,7 @@
 				)
 			)
 		)
-		(property "Value" "1μF"
+		(property "Value" "1uF"
 			(at 2.5 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15795,7 +15798,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/47c60e3c-a40c-4585-b139-e420aa3ab4a2")
+		(sheetname "Root")
+		(sheetfile "Powerbank.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 5.1289 1.7272)
@@ -16009,7 +16015,7 @@
 				)
 			)
 		)
-		(property "Value" "0.1μF"
+		(property "Value" "0.1uF"
 			(at 2.499995 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16297,7 +16303,7 @@
 				)
 			)
 		)
-		(property "Value" "0.1μF"
+		(property "Value" "0.1uF"
 			(at 2.499995 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16585,7 +16591,7 @@
 				)
 			)
 		)
-		(property "Value" "100Ω"
+		(property "Value" "100"
 			(at 6.096 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16931,7 +16937,7 @@
 				)
 			)
 		)
-		(property "Value" "0.1μF"
+		(property "Value" "0.1uF"
 			(at 2.499995 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16980,7 +16986,7 @@
 			)
 		)
 		(property "Mouser" "594-K104K10X7RF53H5"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "815af399-a8c3-4d85-9800-a778befc4e59")
@@ -17219,7 +17225,7 @@
 				)
 			)
 		)
-		(property "Value" "1μF"
+		(property "Value" "1uF"
 			(at 2.5 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
