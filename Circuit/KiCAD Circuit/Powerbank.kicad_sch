@@ -10828,7 +10828,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser" "512-1N4149TR"
+		(property "Mouser" "512-1N4149"
 			(at 170.18 50.8 90)
 			(effects
 				(font
@@ -11059,7 +11059,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser" "512-1N4149TR"
+		(property "Mouser" "512-1N4149"
 			(at 125.73 50.8 90)
 			(effects
 				(font
