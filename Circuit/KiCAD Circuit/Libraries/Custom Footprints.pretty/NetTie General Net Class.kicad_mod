@@ -69,7 +69,7 @@
 	(net_tie_pad_groups "1, 2")
 	(fp_poly
 		(pts
-			(xy 1.27 -0.07) (xy -1.27 -0.07) (xy -1.27 0.07) (xy 1.27 0.07)
+			(xy 1.27 -0.1) (xy -1.27 -0.1) (xy -1.27 0.1) (xy 1.27 0.1)
 		)
 		(stroke
 			(width 0)
@@ -81,13 +81,13 @@
 	)
 	(pad "1" smd circle
 		(at -1.27 0)
-		(size 0.14 0.14)
+		(size 0.2 0.2)
 		(layers "F.Cu")
 		(uuid "1745e8e7-cb05-4e0c-be57-60ff31465fb9")
 	)
 	(pad "2" smd circle
 		(at 1.27 0)
-		(size 0.14 0.14)
+		(size 0.2 0.2)
 		(layers "F.Cu")
 		(uuid "b531e0f4-5d47-4a72-8a54-a3eaafb85b86")
 	)
