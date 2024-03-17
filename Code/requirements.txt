@@ -1,0 +1,1 @@
+https://github.com/thijse/Arduino-Log/?tab=readme-ov-file at version 1.1.1
