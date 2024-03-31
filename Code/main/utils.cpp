@@ -5,9 +5,9 @@
 #include "register.h"
 #include "utils.h"
 
-void readRegisters(uint8_t register, uint8_t* buffer, uint8_t numberBytes) {
+void readRegisters(uint8_t registerAddress, uint8_t* buffer, uint8_t numberBytes) {
 	Wire.beginTransmission(I2C_BQ76920_ADDRESS);
-	Wire.write(register);
+	Wire.write(registerAddress);
 	Wire.endTransmission(false); // false means a repeated start will be sent instead of releasing the bus.
 	Wire.requestFrom(I2C_BQ76920_ADDRESS, numberBytes);
 	
@@ -18,25 +18,25 @@ void readRegisters(uint8_t register, uint8_t* buffer, uint8_t numberBytes) {
 	}
 }
 
-uint8_t readRegister(uint8_t register) {
+uint8_t readRegister(uint8_t registerAddress) {
 	Wire.beginTransmission(I2C_BQ76920_ADDRESS);
-	Wire.write(register);
+	Wire.write(registerAddress);
 	Wire.endTransmission(false); // false means a repeated start will be sent instead of releasing the bus.
 	Wire.requestFrom(I2C_BQ76920_ADDRESS, 1);
 	return Wire.read();
 }
 
-void writeRegister(uint8_t register, uint8_t data) {
-	Log.noticeln("\nWrite: register %X; data: %X", register, data);
+void writeRegister(uint8_t registerAddress, uint8_t data) {
+	Log.noticeln("\nWrite: register %X; data: %X", registerAddress, data);
 	// Blocks to send are: 1) Start 2) Slave address 3) Register address 4) Data 5) CRC 6) Stop
 	Wire.beginTransmission(I2C_BQ76920_ADDRESS); // 1) and 2) step
-	Wire.write(register); // 3) step
+	Wire.write(registerAddress); // 3) step
 	Wire.write(data); // 4) step
 	
 	// CRC is calculated over slave address (including R/W bit), register address and data.
 	uint8_t crc = 0;
 	crc = _crc8_ccitt_update(crc, (I2C_BQ76920_ADDRESS << 1) | 0);
-	crc = _crc8_ccitt_update(crc, address);
+	crc = _crc8_ccitt_update(crc, registerAddress);
 	crc = _crc8_ccitt_update(crc, data);
 	
 	Wire.write(crc);
