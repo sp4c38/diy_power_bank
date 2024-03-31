@@ -61,4 +61,17 @@ void loop() {
 
 void readCellVoltages() {
     Log.noticeln("Reading cell voltages.");
+    uint8_t cellRegistersToRead[] = {register_map::VC1_HI, register_map::VC2_HI, register_map::VC5_HI};
+    uint8_t voltages[3];
+    int adcVal;
+    
+    for (uint8_t cellRegister : cellRegistersToRead) {
+        uint8_t reading[4]; // VCx_HI, VCx_HI CRC, VCx_LO, VCx_LO CRC
+        // For VCx_HI the CRC is based on the slave address and data byte; for VCx_LO only on the data byte.
+        readRegisters(cellRegister, reading, 4);
+        
+        adcVal = ((reading[0] & 0b00111111) << 8) | reading[2];
+        Log.noticeln("%d", adcVal);
+    }
+    
 }

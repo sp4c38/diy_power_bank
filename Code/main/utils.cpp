@@ -19,11 +19,9 @@ void readRegisters(uint8_t registerAddress, uint8_t* buffer, uint8_t numberBytes
 }
 
 uint8_t readRegister(uint8_t registerAddress) {
-	Wire.beginTransmission(I2C_BQ76920_ADDRESS);
-	Wire.write(registerAddress);
-	Wire.endTransmission(false); // false means a repeated start will be sent instead of releasing the bus.
-	Wire.requestFrom(I2C_BQ76920_ADDRESS, 1);
-	return Wire.read();
+	uint8_t buffer[1];
+	readRegisters(registerAddress, buffer, 1);
+	return buffer[0];
 }
 
 void writeRegister(uint8_t registerAddress, uint8_t data) {
