@@ -13,7 +13,7 @@ given configuration.
 #include "register.h"
 #include "utils.h"
 
-int adcOffset;
+int8_t adcOffset = 0;
 int adcGain;
 uint16_t voltages[3];
 
@@ -30,9 +30,8 @@ void setup() {
     Wire.begin();
     Wire.setClock(100000);
     Log.noticeln("************* The Last Minute Life Saver Power Bank *************");
-    Log.noticeln("Please boot the BQ76920 device. Waiting 1s.");
+    Log.noticeln("Please boot the BQ76920 device. Waiting 1s...");
     delay(1000);
-    Log.noticeln("Continuing...");
     
     // Write CC_CFG register
     writeRegister(register_map::CC_CFG, 0x19);
@@ -65,12 +64,13 @@ void updateVoltages() {
     uint16_t adcVal; // Type must be >= 14 bit long
     
     for (int i = 0; i < 3; i++) {
-        uint8_t reading[4]; // VCx_HI, VCx_HI CRC, VCx_LO, VCx_LO CRC
+        uint8_t reading[2]; // VCx_HI, VCx_LO
         // For VCx_HI the CRC is based on the slave address and data byte; for VCx_LO only on the data byte.
-        readRegisters(cellRegistersToRead[i], reading, 4);
+        readRegisters(cellRegistersToRead[i], reading, 2);
         
-        adcVal = ((reading[0] & 0b00111111) << 8) | reading[2];
+        adcVal = ((reading[0] & 0b00111111) << 8) | reading[1];
         uint16_t voltage = (adcVal * adcGain / 1000) + adcOffset;
         voltages[i] = voltage;
-    }
+        Log.noticeln("%d: %d", i, voltage);
+    };
 }
