@@ -15,6 +15,7 @@ given configuration.
 
 int adcOffset;
 int adcGain;
+uint16_t voltages[3];
 
 BLEApp bleApp;
 
@@ -29,8 +30,8 @@ void setup() {
     Wire.begin();
     Wire.setClock(100000);
     Log.noticeln("************* The Last Minute Life Saver Power Bank *************");
-    Log.noticeln("Please boot the BQ76920 device. Waiting 10s.");
-    delay(10000);
+    Log.noticeln("Please boot the BQ76920 device. Waiting 1s.");
+    delay(1000);
     Log.noticeln("Continuing...");
     
     // Write CC_CFG register
@@ -54,24 +55,22 @@ void setup() {
 
 // Runs repeatedly
 void loop() {
-    Log.noticeln("Looping");
     // bleApp.loop();
+    updateVoltages();
     delay(250);
 }
 
-void readCellVoltages() {
-    Log.noticeln("Reading cell voltages.");
+void updateVoltages() {
     uint8_t cellRegistersToRead[] = {register_map::VC1_HI, register_map::VC2_HI, register_map::VC5_HI};
-    uint8_t voltages[3];
-    int adcVal;
+    uint16_t adcVal; // Type must be >= 14 bit long
     
-    for (uint8_t cellRegister : cellRegistersToRead) {
+    for (int i = 0; i < 3; i++) {
         uint8_t reading[4]; // VCx_HI, VCx_HI CRC, VCx_LO, VCx_LO CRC
         // For VCx_HI the CRC is based on the slave address and data byte; for VCx_LO only on the data byte.
-        readRegisters(cellRegister, reading, 4);
+        readRegisters(cellRegistersToRead[i], reading, 4);
         
         adcVal = ((reading[0] & 0b00111111) << 8) | reading[2];
-        Log.noticeln("%d", adcVal);
+        uint16_t voltage = (adcVal * adcGain / 1000) + adcOffset;
+        voltages[i] = voltage;
     }
-    
 }
