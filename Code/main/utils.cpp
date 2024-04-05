@@ -1,5 +1,7 @@
 #include <ArduinoLog.h>
 #include <cstdint>
+#include <functional>
+#include <unordered_map>
 #include <Wire.h>
 
 #include "register.h"
@@ -26,7 +28,7 @@ void readRegisters(uint8_t registerAddress, uint8_t* data, uint8_t numberBytes) 
 		if (Wire.available()) {
 			buffer[i+1] = Wire.read();
 		} else {
-			Log.fatalln("Expected bytes can't be read.");
+			Log.errorln("Expected bytes can't be read.");
 			exit(1);
 		}
 	};
@@ -34,7 +36,7 @@ void readRegisters(uint8_t registerAddress, uint8_t* data, uint8_t numberBytes) 
 	// Check CRC
 	// First CRC is calculated over slave address and the first data byte.
 	if (crc8_ccitt(0, buffer, 2) != buffer[2]) {
-		Log.fatalln("CRC failed. CRCs of slave address and data byte don't match.");
+		Log.errorln("CRC failed. CRCs of slave address and data byte don't match.");
 		exit(1);
 	};
 	data[0] = buffer[1];
@@ -42,7 +44,7 @@ void readRegisters(uint8_t registerAddress, uint8_t* data, uint8_t numberBytes) 
 	for (int i = 0; i < (numberBytes-1); i++) {
 		data[i+1] = buffer[3+i*2];
 		if (crc8_ccitt(0, buffer+3+i*2, 1) != buffer[4+i*2]) {
-			Log.fatalln("CRC failed. CRC of data byte %d doesn't match.", i+2);
+			Log.errorln("CRC failed. CRC of data byte %d doesn't match.", i+2);
 			exit(1);
 		};
 	};
@@ -55,7 +57,6 @@ uint8_t readRegister(uint8_t registerAddress) {
 }
 
 void writeRegister(uint8_t registerAddress, uint8_t data) {
-	Log.noticeln("\nWrite: register %X; data: %X", registerAddress, data);
 	// Blocks to send are: 1) Start 2) Slave address 3) Register address 4) Data 5) CRC 6) Stop
 	Wire.beginTransmission(I2C_BQ76920_ADDRESS); // 1) and 2) step
 	Wire.write(registerAddress); // 3) step
@@ -71,7 +72,7 @@ void writeRegister(uint8_t registerAddress, uint8_t data) {
 	  Log.errorln("nWrite failed; response code: %d", response);
 	  exit(1);
 	} else {
-	  Log.noticeln("nWrite successful; CRC: %X", crc);
+	  Log.noticeln("Write: register %X; data: %X; CRC: %X successful.", registerAddress, data, crc);
 	};
 }
 
@@ -85,4 +86,13 @@ uint8_t crc8_ccitt(uint8_t val, const uint8_t *buf, size_t cnt) {
 		val = (val << 4) ^ crc8_ccitt_small_table[val >> 4];
 	}
 	return val;
+}
+
+void every(unsigned int interval, unsigned long* previousMillis, std::function<void()> codeBlock) {
+	unsigned long currentMillis = millis();
+	
+	if (currentMillis - *previousMillis >= interval) {
+		*previousMillis = currentMillis;
+		codeBlock();
+	}
 }
