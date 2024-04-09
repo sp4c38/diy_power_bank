@@ -1,3 +1,8 @@
+#ifndef REGISTER_H
+#define REGISTER_H
+
+const uint16_t upperVoltageLimit = 4190; // in mV
+const uint16_t lowerVoltageLimit = 2800; // in mV
 const uint8_t currentSenseResistance = 8; // in mOhm
 
 // Either the BQ7692003PW or BQ7692003PWR IC must be used. CRC is enabled.
@@ -6,32 +11,41 @@ const uint8_t ALERT_PIN = 10;
 const uint8_t SDA_PIN = 18; // A4
 const uint8_t SCL_PIN = 19; // A5
 
-namespace balance {
-	const uint8_t NONE = 8;
+enum class SysStatusOpt : uint8_t {
+// Store the BIT place number like indicated in the data sheet.
+	CC_READY = 7,
+	OVRD_ALERT = 4,
+	UV = 3,
+	OV = 2,
+	SCD = 1,
+	OCD = 0
+};
+
+enum class BalanceOpt : uint8_t {
 	// Store the BIT place number like indicated in the data sheet.
-	const uint8_t CB1 = 0;
-	const uint8_t CB2 = 1;
-	const uint8_t CB5 = 4;
-}
+	CB1 = 0,
+	CB2 = 1,
+	CB5 = 4
+};
 
-namespace systemControl1 {
-	const uint8_t NONE = 8; // Only one NONE is needed so it is just placed in systemControl1 instead of systemControl2.
+enum class SysControlOpt : uint8_t {
 	// Store the BIT place number like indicated in the data sheet.
-	const uint8_t ADC_EN = 4;
-	const uint8_t TEMP_SEL = 3;
-	const uint8_t SHUT_A = 1;
-	const uint8_t SHUT_B = 0;
-}
+	// SYS_CTRL1
+	ADC_EN = 4,
+	TEMP_SEL = 3,
+	SHUT_A = 1,
+	SHUT_B = 0,
 
-namespace systemControl2 {
-	const uint8_t DELAY_DIS = 7;
-	const uint8_t CC_EN = 6;
-	const uint8_t CC_ONESHOT = 5;
-	const uint8_t DSG_ON = 1;
-	const uint8_t CHG_ON = 0;
-}
+	// SYS_CTRL2
+	DELAY_DIS = 7,
+	CC_EN = 6,
+	CC_ONESHOT = 5,
+	DSG_ON = 1,
+	CHG_ON = 0
+};
 
-namespace register_map {
+namespace registerMap {
+	const uint8_t SYS_STAT = 0x00;
 	const uint8_t CELLBAL1 = 0x01;
 	const uint8_t SYS_CTRL1 = 0x04;
 	const uint8_t SYS_CTRL2 = 0x05;
@@ -53,3 +67,13 @@ namespace register_map {
 	const uint8_t ADCOFFSET = 0x51;
 	const uint8_t ADCGAIN2 = 0x59;
 }
+
+enum class BatteryState {
+	SHIPMode,
+	Charging,
+	Balancing,
+	Discharging,
+	Idle
+};
+
+#endif

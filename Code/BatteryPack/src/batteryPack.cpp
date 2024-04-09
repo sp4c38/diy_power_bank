@@ -1,0 +1,142 @@
+#include <ArduinoLog.h>
+#include <Wire.h>
+
+#include "batteryPack.h"
+#include "utils.h"
+
+BatteryPack::BatteryPack() {
+	// Setup Wire
+	Wire.begin();
+	Wire.setClock(100000);
+}
+
+void BatteryPack::readOffsetAndGain() {
+	adcOffset = (int8_t) readRegister(I2C_BQ76920_ADDRESS, registerMap::ADCOFFSET); // ADCOFFSET is stored as 2's complement; ADCOFFSET in uV
+	adcGain = 365 + (((readRegister(I2C_BQ76920_ADDRESS, registerMap::ADCGAIN1) & 0b00001100) << 1) | ((readRegister(I2C_BQ76920_ADDRESS, registerMap::ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
+}
+
+void BatteryPack::updateVoltages() {
+	unsigned long adcVal; // Type must be >= 14 bit long
+	for (auto &pair : voltages) {
+		uint8_t reading[2]; // VCx_HI, VCx_LO
+		// For VCx_HI the CRC is based on the slave address and data byte; for VCx_LO only on the data byte.
+		readRegisters(I2C_BQ76920_ADDRESS, pair.first, reading, 2);
+		adcVal = ((reading[0] & 0b00111111) << 8) | reading[1];
+		pair.second = ((adcVal * adcGain) / 1000) + adcOffset;
+	}
+
+	uint8_t reading[2];
+	readRegisters(I2C_BQ76920_ADDRESS, registerMap::BAT_HI, reading, 2);
+	adcVal = (reading[0] << 8) | reading[1];
+	voltage = (4 * adcGain * adcVal) / 1000 + (voltages.size() * adcOffset);
+}
+
+void BatteryPack::updateCurrent() {
+	uint8_t reading[2];
+	readRegisters(I2C_BQ76920_ADDRESS, registerMap::CC_HI, reading, 2);
+	int16_t adcVal = (reading[0] << 8) | reading[1]; // Registers represent a 2's complement number in 16 bit format
+	current = ((long) adcVal * 8.44) / currentSenseResistance; // Result in mA
+
+	// Filter out noise
+	if (current >= -3 && current <= 3) {
+		current = 0;
+	}
+}
+
+void BatteryPack::updateSysStatus() {
+	uint8_t raw = readRegister(I2C_BQ76920_ADDRESS, registerMap::SYS_STAT);
+	for (auto &value : sysStatus) {
+		sysStatus[value.first] = (raw >> ((uint8_t) value.first)) & 1;
+	}
+}
+
+void BatteryPack::updateSysControl() {
+	uint8_t reading[2];
+	readRegisters(I2C_BQ76920_ADDRESS, registerMap::SYS_CTRL1, reading, 2);
+	for (auto &value : sysControl1) {
+		sysControl1[value.first] = (reading[0] >> ((uint8_t) value.first)) & 1;
+	}
+	for (auto &value : sysControl2) {
+		sysControl2[value.first] = (reading[1] >> ((uint8_t) value.first)) & 1;
+	}
+}
+
+void BatteryPack::updateTemperature() {
+	uint8_t reading[2];
+	readRegisters(I2C_BQ76920_ADDRESS, registerMap::TS1_HI, reading, 2);
+	uint16_t adcVal = (((uint16_t) reading[0] & 0b00111111) << 8) | reading[1];
+	temp = 25.0f - (((adcVal * 0.000382f) - 1.20f) / 0.0042f);
+}
+
+// Transitions the BQ76920 to a low-power mode (SHIP mode).
+void BatteryPack::transitionToSHIPMode() {
+	Log.noticeln("System transitioning to SHIP mode. To resume operation press the push button.");
+	sysControl1[SysControlOpt::SHUT_A] = sysControl1[SysControlOpt::SHUT_B]  = false;
+	pushControl();
+	sysControl1[SysControlOpt::SHUT_B] = true;
+	pushControl();
+	sysControl1[SysControlOpt::SHUT_A] = true;
+	sysControl1[SysControlOpt::SHUT_B] = false;
+	pushControl();
+	state = BatteryState::SHIPMode;
+}
+
+void BatteryPack::pushBalancing() {
+	// Adjacent cells aren't allowed to be balanced! Check if this condition is met.
+	bool foundCellToBalance = false;
+	for (auto &balanceCellConfig : balanceCells) {
+		if (balanceCellConfig.second == true) {
+			if (foundCellToBalance == true) {
+				if (balanceCells[BalanceOpt::CB1] == true &&
+					balanceCells[BalanceOpt::CB5] == true &&
+					balanceCells[BalanceOpt::CB2] == false) {
+					break;
+				} else {
+					Log.fatalln("Trying to balance adjacent cells. Never do this!");
+					exit(1);
+				}
+			}
+			foundCellToBalance = true;
+		}
+	}
+
+	Log.noticeln("Pushing balance config - CB1: %T, CB2: %T, CB5: %T", balanceCells[BalanceOpt::CB1], balanceCells[BalanceOpt::CB2], balanceCells[BalanceOpt::CB5]);
+	uint8_t balancingData = 0;
+	for (auto &entry : balanceCells) {
+		balancingData = balancingData | (((uint8_t) entry.second) << ((uint8_t) entry.first));
+	}
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::CELLBAL1, balancingData);
+}
+
+void BatteryPack::pushProtection() {
+	Log.noticeln("Pushing protection.");
+	// RSNS = 0, SCD_D1:0 = 70μs (0x0), SCD_T2:0 = 33mV (0x1) (ISCD = 4,125A)
+	uint8_t protect1Config = 0b00000001;
+	// OCD_D2:0 = 0x5, OCD_T3:0 = 17mV (0x3) (IOCD = 2,125A)
+	uint8_t protect2Config = 0b01010011;
+	// UV_D1:0 = 0x1 (4s), OV_D1:0 = 0x1 (2s)
+	uint8_t protect3Config = 0b01010000;
+	// Desired overvoltage protection: 4.23 Volt
+	uint8_t ovTripConfig = ((((unsigned long) 4230 - adcOffset) * 1000 / adcGain) >> 4) & 0b11111111;
+	// Desired undervoltage protection: 2.55 Volt
+	uint8_t uvTripConfig = ((((unsigned long) 2550 - adcOffset) * 1000 / adcGain) >> 4) & 0b11111111;
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT1, protect1Config);
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT2, protect2Config);
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT3, protect3Config);
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::OV_TRIP, ovTripConfig);
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::UV_TRIP, uvTripConfig);
+}
+
+void BatteryPack::pushControl() {
+	Log.noticeln("Pushing system control.");
+	uint8_t sysControl1Data = 0;
+	uint8_t sysControl2Data = 0;
+	for (const auto &entry : sysControl1) {
+		sysControl1Data = sysControl1Data | (((uint8_t) entry.second) << ((uint8_t) entry.first));
+	}
+	for (const auto &entry : sysControl2) {
+		sysControl2Data = sysControl2Data | (((uint8_t) entry.second) << ((uint8_t) entry.first));
+	}
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::SYS_CTRL1, sysControl1Data);
+	writeRegister(I2C_BQ76920_ADDRESS, registerMap::SYS_CTRL2, sysControl2Data);
+}
