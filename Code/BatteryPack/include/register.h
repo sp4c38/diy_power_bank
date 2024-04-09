@@ -3,6 +3,7 @@
 
 const uint16_t upperVoltageLimit = 4190; // in mV
 const uint16_t lowerVoltageLimit = 2800; // in mV
+const uint16_t allowedBalancingDifference = 20; // Maximum difference that is allowed between cells to not start balancing.
 const uint8_t currentSenseResistance = 8; // in mOhm
 
 // Either the BQ7692003PW or BQ7692003PWR IC must be used. CRC is enabled.

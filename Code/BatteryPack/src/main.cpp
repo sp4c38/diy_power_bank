@@ -20,7 +20,11 @@ given configuration.
 
 BatteryPack pack;
 
+bool faultHandled = false;
+
 void handleSysStatusFault(BatteryPack &pack);
+void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &minVoltage);
+void performBatteryState(BatteryPack &pack);
 
 // BLEApp bleApp;
 
@@ -86,11 +90,15 @@ void loop() {
     if (pack.sysStatus[SysStatusOpt::UV] == true || pack.sysStatus[SysStatusOpt::OV] == true ||
         pack.sysStatus[SysStatusOpt::SCD] == true || pack.sysStatus[SysStatusOpt::OCD] == true)
     {
-        handleSysStatusFault(pack);
+        if (!faultHandled) {
+            handleSysStatusFault(pack);
+            faultHandled = true;
+        }
+        delay(500);
         return;
-    }
+    } else { faultHandled = false; }
 
-    performBatteryState();
+    performBatteryState(pack);
 
     // // Serial input
     // if (Serial.available()) {
@@ -123,77 +131,78 @@ void handleSysStatusFault(BatteryPack &pack) {
     pack.pushBalancing();
 }
 
-void performBatteryState() {
-    if (state == BatteryState::Idle && packCurrent > 0) {
-        state = BatteryState::Charging;
-    } else if (state == BatteryState::Idle && packCurrent < 0) {
-        state = BatteryState::Discharging;
-    } else if (state == BatteryState::Discharging && packCurrent == 0) {
-        state = BatteryState::Idle;
+void performBatteryState(BatteryPack &pack) {
+    if (pack.state == BatteryState::Idle && pack.current > 0) {
+        pack.state = BatteryState::Charging;
+    } else if (pack.state == BatteryState::Idle && pack.current < 0) {
+        pack.state = BatteryState::Discharging;
+    } else if (pack.state == BatteryState::Discharging && pack.current == 0) {
+        pack.state = BatteryState::Idle;
     }
     
-    bool &dsgOn = control2Config[control2Opt::DSG_ON];
-    bool &chgOn = control2Config[control2Opt::CHG_ON]; 
+    bool &dsgOn = pack.sysControl2[SysControlOpt::DSG_ON];
+    bool &chgOn = pack.sysControl2[SysControlOpt::CHG_ON];
     
-    std::pair<const uint8_t, uint16_t> &minVoltage = *min_element(voltages.begin(), voltages.end(),
+    std::pair<const uint8_t, uint16_t> &minVoltage = *min_element(pack.voltages.begin(), pack.voltages.end(),
         [](const auto& l, const auto& r) { return l.second < r.second; });
-    std::pair<const uint8_t, uint16_t> &maxVoltage = *std::max_element(voltages.begin(), voltages.end(),
+    std::pair<const uint8_t, uint16_t> &maxVoltage = *std::max_element(pack.voltages.begin(), pack.voltages.end(),
         [](const auto& l, const auto& r) { return l.second < r.second; });
     
-    // Check discharge
+    // Check lower voltage limits
     if (dsgOn == true && minVoltage.second <= lowerVoltageLimit) {
         dsgOn = false;
-        pushControl(registerMap::SYS_CTRL2);
+        pack.pushControl();
     } else if (dsgOn == false && minVoltage.second >= lowerVoltageLimit+300) {
         dsgOn = true;
-        pushControl(registerMap::SYS_CTRL2);
+        pack.pushControl();
     }
     
-    // Check charge
+    // Check upper voltage limits
     if (chgOn == true && maxVoltage.second >= upperVoltageLimit) {
         chgOn = false;
-        pushControl(registerMap::SYS_CTRL2);
-        state = BatteryState::Balancing;
-    } else if (chgOn == false && maxVoltage.second <=  upperVoltageLimit - 100) {
+        pack.pushControl();
+        pack.state = BatteryState::Balancing;
+    } else if (pack.state != BatteryState::Balancing && chgOn == false && maxVoltage.second <=  upperVoltageLimit - 100) {
         chgOn = true;
-        pushControl(registerMap::SYS_CTRL2);
+        pack.pushControl();
     }
     
-    if (BatteryState::Balancing) {
-        performBalancing(state, minVoltage);
+    if (pack.state == BatteryState::Balancing) {
+        performBalancing(pack, minVoltage);
     }
 }
 
 // Perform balancing if necessary
-void performBalancing(BatteryState &state, std::pair<const uint8_t, uint16_t> &minVoltage) {
-    std::vector<std::tuple<std::pair<uint8_t, uint16_t>, unsigned int>> cellsToBalance; // List of all cells that need balancing (except the lowest) and their voltage difference to the lowest cell.
-    for (auto &entry : voltages) {
-        if (entry.first == minVoltage.first) { continue; }
-        unsigned int difference = entry.second - minVoltage.second;
-        if (difference > 20) {
-            cellsToBalance.push_back(std::make_tuple(entry, (entry.second - minVoltage.second)));
+void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &minVoltage) {
+    std::vector<std::pair<uint8_t, uint16_t>> cellsToBalance; // List of all cells that need balancing (except the lowest) and their voltage difference to the lowest cell.
+    for (auto &voltage : pack.voltages) {
+        if (voltage.first == minVoltage.first) { continue; } // Skip minimum voltage cell.
+        unsigned int difference = voltage.second - minVoltage.second;
+        if (difference > allowedBalancingDifference) {
+            cellsToBalance.push_back(voltage);
         }
     }
-    if (cellsToBalance.size() == 0) {
-        Log.noticeln("All cells are balanced.");
-        return;
-    } else if (cellsToBalance.size() == 2) {
-        if (!(std::get<0>(cellsToBalance[0]).first == registerMap::VC1_HI &&
-              std::get<0>(cellsToBalance[1]).first == registerMap::VC5_HI)) {
-              cellsToBalance.erase(cellsToBalance.begin());
-              Log.noticeln("Need to balance adjacent cells, only one will be balanced at a time.");
-        }
-    }
+
+    // if (cellsToBalance.size() == 0) {
+    //     Log.noticeln("All cells are balanced.");
+    //     return;
+    // } else if (cellsToBalance.size() == 2) {
+    //     if (!(std::get<0>(cellsToBalance[0]).first == registerMap::VC1_HI &&
+    //           std::get<0>(cellsToBalance[1]).first == registerMap::VC5_HI)) {
+    //           cellsToBalance.erase(cellsToBalance.begin());
+    //           Log.noticeln("Need to balance adjacent cells, only one will be balanced at a time.");
+    //     }
+    // }
     
-    for (auto &entry : cellsToBalance) {
-        uint8_t cellRegister = std::get<0>(entry).first;
-        if (cellRegister == registerMap::VC1_HI) {
-            balanceCells[balanceOpt::CB1] = true;
-        } else if (cellRegister == registerMap::VC2_HI) {
-            balanceCells[balanceOpt::CB2] = true;
-        } else if (cellRegister == registerMap::VC5_HI) {
-            balanceCells[balanceOpt::CB5] = true;
-        }
-    }
-    pushBalancing();
+    // for (auto &entry : cellsToBalance) {
+    //     uint8_t cellRegister = std::get<0>(entry).first;
+    //     if (cellRegister == registerMap::VC1_HI) {
+    //         balanceCells[balanceOpt::CB1] = true;
+    //     } else if (cellRegister == registerMap::VC2_HI) {
+    //         balanceCells[balanceOpt::CB2] = true;
+    //     } else if (cellRegister == registerMap::VC5_HI) {
+    //         balanceCells[balanceOpt::CB5] = true;
+    //     }
+    // }
+    // pushBalancing();
 }
