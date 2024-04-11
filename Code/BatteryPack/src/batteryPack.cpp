@@ -82,30 +82,38 @@ void BatteryPack::transitionToSHIPMode() {
 }
 
 void BatteryPack::pushBalancing() {
-	// Adjacent cells aren't allowed to be balanced! Check if this condition is met.
-	bool foundCellToBalance = false;
-	for (auto &balanceCellConfig : balanceCells) {
-		if (balanceCellConfig.second == true) {
-			if (foundCellToBalance == true) {
-				if (balanceCells[BalanceOpt::CB1] == true &&
-					balanceCells[BalanceOpt::CB5] == true &&
-					balanceCells[BalanceOpt::CB2] == false) {
-					break;
-				} else {
-					Log.fatalln("Trying to balance adjacent cells. Never do this!");
-					exit(1);
-				}
-			}
-			foundCellToBalance = true;
+	// Balance enabled adjacent cells aren't allowed! Check this.
+	// Can't use the checkIfCellsAreAdjacent as this just takes two cells and doesn't evaluate if balancing is enabled or is disabled for these cells.
+	auto it1 = balanceCells.begin();
+	auto it2 = ++it1;
+	while (it2 != balanceCells.end()) {
+		if (it1->second && it2->second) {
+			Log.errorln("Trying to push balancing config that balances adjacent cells. Never do this!");
+			return;
 		}
+		++it1;
+		++it2;
 	}
 
-	Log.noticeln("Pushing balance config - CB1: %T, CB2: %T, CB5: %T", balanceCells[BalanceOpt::CB1], balanceCells[BalanceOpt::CB2], balanceCells[BalanceOpt::CB5]);
+    Log.noticeln("Pushing balance config - CB1: %T, CB2: %T, CB5: %T", balanceCells[BalanceOpt::CB1], balanceCells[BalanceOpt::CB2], balanceCells[BalanceOpt::CB5]);
 	uint8_t balancingData = 0;
 	for (auto &entry : balanceCells) {
 		balancingData = balancingData | (((uint8_t) entry.second) << ((uint8_t) entry.first));
 	}
 	writeRegister(I2C_BQ76920_ADDRESS, registerMap::CELLBAL1, balancingData);
+}
+
+bool BatteryPack::checkIfCellsAreAdjacent(const BalanceOpt a, const BalanceOpt b) {
+	auto it1 = balanceCells.find(a);
+	auto it2 = balanceCells.find(b);
+
+	if (it1 != balanceCells.end() && it2 != balanceCells.end()) {
+		if ((++it1 == it2) || (++it2 == it1)) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void BatteryPack::pushProtection() {

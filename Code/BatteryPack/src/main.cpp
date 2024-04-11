@@ -174,6 +174,7 @@ void performBatteryState(BatteryPack &pack) {
 
 // Perform balancing if necessary
 void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &minVoltage) {
+    // Get cells that need balancing
     std::vector<std::pair<uint8_t, uint16_t>> cellsToBalance; // List of all cells that need balancing (except the lowest) and their voltage difference to the lowest cell.
     for (auto &voltage : pack.voltages) {
         if (voltage.first == minVoltage.first) { continue; } // Skip minimum voltage cell.
@@ -183,26 +184,50 @@ void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &min
         }
     }
 
-    // if (cellsToBalance.size() == 0) {
-    //     Log.noticeln("All cells are balanced.");
-    //     return;
-    // } else if (cellsToBalance.size() == 2) {
-    //     if (!(std::get<0>(cellsToBalance[0]).first == registerMap::VC1_HI &&
-    //           std::get<0>(cellsToBalance[1]).first == registerMap::VC5_HI)) {
-    //           cellsToBalance.erase(cellsToBalance.begin());
-    //           Log.noticeln("Need to balance adjacent cells, only one will be balanced at a time.");
-    //     }
-    // }
-    
-    // for (auto &entry : cellsToBalance) {
-    //     uint8_t cellRegister = std::get<0>(entry).first;
-    //     if (cellRegister == registerMap::VC1_HI) {
-    //         balanceCells[balanceOpt::CB1] = true;
-    //     } else if (cellRegister == registerMap::VC2_HI) {
-    //         balanceCells[balanceOpt::CB2] = true;
-    //     } else if (cellRegister == registerMap::VC5_HI) {
-    //         balanceCells[balanceOpt::CB5] = true;
-    //     }
-    // }
-    // pushBalancing();
+    // Check if we can turn off balancing for any cells that have balancing already turned on.
+    bool anyCellAlreadyBalancing = false;
+    for (auto &cell : pack.balanceCells) {
+        if (cell.second == true) {
+            uint8_t voltageCell = balanceCellToVoltageCell.at(cell.first);
+            unsigned int difference = pack.voltages[voltageCell] - minVoltage.second;
+            if (difference <= balancingDifference) {
+                Log.noticeln("Turning off balancing for %s.", balanceCellToStringName.at(cell.first));
+                cell.second = false;
+                pack.pushBalancing();
+            } else {
+                anyCellAlreadyBalancing = true;
+            }
+        }
+    }
+
+    if (anyCellAlreadyBalancing) {
+        return;
+    }
+
+    if (cellsToBalance.size() == 0) {
+        Log.noticeln("All cells are balanced. Transitioning to idle state.");
+        pack.state = BatteryState::Idle;
+        return;
+    } else if (cellsToBalance.size() == 1) {
+        BalanceOpt balanceOpt = voltageCellToBalanceOpt.at(cellsToBalance[0].first);
+        Log.noticeln("Starting to balance single %s.", balanceCellToStringName.at(balanceOpt));
+        pack.balanceCells[balanceOpt] = true;
+        pack.pushBalancing();
+    } else if (cellsToBalance.size() == 2) {
+        BalanceOpt cell1 = voltageCellToBalanceOpt.at(cellsToBalance[0].first);
+        BalanceOpt cell2 = voltageCellToBalanceOpt.at(cellsToBalance[1].first);
+
+        if (pack.checkIfCellsAreAdjacent(cell1, cell2)) {
+            Log.noticeln("Need to balance adjacent cells but as this isn't possible, first starting to balance %s.", balanceCellToStringName.at(cell1));
+            pack.balanceCells[cell1] = true;
+        } else {
+            Log.noticeln("Balancing %s and %s at once. They aren't adjacent.", balanceCellToStringName.at(cell1), balanceCellToStringName.at(cell2));
+            pack.balanceCells[cell1] = true;
+            pack.balanceCells[cell2] = true;
+        }
+        pack.pushBalancing();
+    } else {
+        Log.errorln("Detected balancing requried for more than 2 cells. This should never happen!");
+        return;
+    }
 }

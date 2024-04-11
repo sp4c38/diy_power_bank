@@ -5,7 +5,9 @@
 class BatteryPack {
 	public:
 		BatteryPack(); // Constructor
-	
+
+		// Maps will be sorted automatically based on the key.
+
 		std::map<SysStatusOpt, bool> sysStatus = {
 			{SysStatusOpt::CC_READY, 0},
 			{SysStatusOpt::OVRD_ALERT, 0},
@@ -51,8 +53,9 @@ class BatteryPack {
 		void updateVoltages(); 
 		void updateCurrent();
 	
-		void transitionToSHIPMode(); 
-		void pushBalancing();
-		void pushProtection(); 
-		void pushControl(); 
+		void transitionToSHIPMode();
+        void pushBalancing();
+        bool checkIfCellsAreAdjacent(const BalanceOpt a, const BalanceOpt b);
+        void pushProtection();
+        void pushControl();
 };

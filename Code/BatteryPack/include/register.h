@@ -1,9 +1,18 @@
+#include <map>
+#include <string>
+
 #ifndef REGISTER_H
 #define REGISTER_H
 
 const uint16_t upperVoltageLimit = 4190; // in mV
 const uint16_t lowerVoltageLimit = 2800; // in mV
+
+// The variable balancingDifference must be smaller than allowedBalancingDifference. This means that the cells get balanced lower than the amount needed to start balancing again.
+// The battery voltage jiggles a bit around its actual value. So if allowedBalancingDifference and balancingDifference were the same we would frequently reenable balancing just because the
+// battery hops a little bit higher than allowedBalancingDifference due to its internal chemistry etc..
 const uint16_t allowedBalancingDifference = 20; // Maximum difference that is allowed between cells to not start balancing.
+const uint16_t balancingDifference = 10; // Balance to this difference when balancing gets enabled.
+
 const uint8_t currentSenseResistance = 8; // in mOhm
 
 // Either the BQ7692003PW or BQ7692003PWR IC must be used. CRC is enabled.
@@ -68,6 +77,24 @@ namespace registerMap {
 	const uint8_t ADCOFFSET = 0x51;
 	const uint8_t ADCGAIN2 = 0x59;
 }
+
+const std::map<BalanceOpt, uint8_t> balanceCellToVoltageCell = {
+	{BalanceOpt::CB1, registerMap::VC1_HI},
+	{BalanceOpt::CB2, registerMap::VC2_HI},
+	{BalanceOpt::CB5, registerMap::VC5_HI}
+};
+
+const std::map<uint8_t, BalanceOpt> voltageCellToBalanceOpt = {
+	{registerMap::VC1_HI, BalanceOpt::CB1},
+	{registerMap::VC2_HI, BalanceOpt::CB2},
+	{registerMap::VC5_HI, BalanceOpt::CB5}
+};
+
+const std::map<BalanceOpt, std::string> balanceCellToStringName = {
+	{BalanceOpt::CB1, "Cell 1"},
+	{BalanceOpt::CB2, "Cell 2"},
+	{BalanceOpt::CB5, "Cell 5"}
+};
 
 enum class BatteryState {
 	SHIPMode,
