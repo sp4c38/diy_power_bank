@@ -152,7 +152,7 @@ void performBatteryState(BatteryPack &pack) {
     if (dsgOn == true && minVoltage.second <= lowerVoltageLimit) {
         dsgOn = false;
         pack.pushControl();
-    } else if (dsgOn == false && minVoltage.second >= lowerVoltageLimit+300) {
+    } else if (pack.state != BatteryState::Balancing && dsgOn == false && minVoltage.second >= lowerVoltageLimit+300) {
         dsgOn = true;
         pack.pushControl();
     }
@@ -160,6 +160,7 @@ void performBatteryState(BatteryPack &pack) {
     // Check upper voltage limits
     if (chgOn == true && maxVoltage.second >= upperVoltageLimit) {
         chgOn = false;
+        dsgOn = false; // Needs to be turned off to not interfere with balancing.
         pack.pushControl();
         pack.state = BatteryState::Balancing;
     } else if (pack.state != BatteryState::Balancing && chgOn == false && maxVoltage.second <=  upperVoltageLimit - 100) {
@@ -174,16 +175,6 @@ void performBatteryState(BatteryPack &pack) {
 
 // Perform balancing if necessary
 void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &minVoltage) {
-    // Get cells that need balancing
-    std::vector<std::pair<uint8_t, uint16_t>> cellsToBalance; // List of all cells that need balancing (except the lowest) and their voltage difference to the lowest cell.
-    for (auto &voltage : pack.voltages) {
-        if (voltage.first == minVoltage.first) { continue; } // Skip minimum voltage cell.
-        unsigned int difference = voltage.second - minVoltage.second;
-        if (difference > allowedBalancingDifference) {
-            cellsToBalance.push_back(voltage);
-        }
-    }
-
     // Check if we can turn off balancing for any cells that have balancing already turned on.
     bool anyCellAlreadyBalancing = false;
     for (auto &cell : pack.balanceCells) {
@@ -202,6 +193,16 @@ void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &min
 
     if (anyCellAlreadyBalancing) {
         return;
+    }
+
+    // Get cells that need balancing
+    std::vector<std::pair<uint8_t, uint16_t>> cellsToBalance; // List of all cells that need balancing (except the lowest) and their voltage difference to the lowest cell.
+    for (auto &voltage : pack.voltages) {
+        if (voltage.first == minVoltage.first) { continue; } // Skip minimum voltage cell.
+        unsigned int difference = voltage.second - minVoltage.second;
+        if (difference > allowedBalancingDifference) {
+            cellsToBalance.push_back(voltage);
+        }
     }
 
     if (cellsToBalance.size() == 0) {
@@ -227,7 +228,7 @@ void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &min
         }
         pack.pushBalancing();
     } else {
-        Log.errorln("Detected balancing requried for more than 2 cells. This should never happen!");
+        Log.errorln("Detected that more than 2 cells require balancing. This should never happen!");
         return;
     }
 }
