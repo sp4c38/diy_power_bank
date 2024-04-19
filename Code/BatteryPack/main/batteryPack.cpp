@@ -4,12 +4,6 @@
 #include "batteryPack.h"
 #include "utils.h"
 
-BatteryPack::BatteryPack() {
-	// Setup Wire
-	Wire.begin();
-	Wire.setClock(100000);
-}
-
 void BatteryPack::readOffsetAndGain() {
 	adcOffset = (int8_t) readRegister(I2C_BQ76920_ADDRESS, registerMap::ADCOFFSET); // ADCOFFSET is stored as 2's complement; ADCOFFSET in uV
 	adcGain = 365 + (((readRegister(I2C_BQ76920_ADDRESS, registerMap::ADCGAIN1) & 0b00001100) << 1) | ((readRegister(I2C_BQ76920_ADDRESS, registerMap::ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
@@ -85,7 +79,8 @@ void BatteryPack::pushBalancing() {
 	// Balance enabled adjacent cells aren't allowed! Check this.
 	// Can't use the checkIfCellsAreAdjacent as this just takes two cells and doesn't evaluate if balancing is enabled or is disabled for these cells.
 	auto it1 = balanceCells.begin();
-	auto it2 = ++it1;
+	auto it2 = it1;
+	++it2;
 	while (it2 != balanceCells.end()) {
 		if (it1->second && it2->second) {
 			Log.errorln("Trying to push balancing config that balances adjacent cells. Never do this!");
@@ -105,10 +100,16 @@ void BatteryPack::pushBalancing() {
 
 bool BatteryPack::checkIfCellsAreAdjacent(const BalanceOpt a, const BalanceOpt b) {
 	auto it1 = balanceCells.find(a);
+	auto it1_next = it1;
+	++it1_next;
 	auto it2 = balanceCells.find(b);
+	auto it2_next = it2;
+	++it2_next;
 
 	if (it1 != balanceCells.end() && it2 != balanceCells.end()) {
-		if ((++it1 == it2) || (++it2 == it1)) {
+		// The issue with using ++it1 directly is that it doesn't just give back the increased iterator, it also assigns the increased
+		// iterator to it1 which we don't want because that would influence the other statments of the if-clause.
+		if ((it1_next == it2) || (it2_next == it1)) {
 			return true;
 		}
 	}
@@ -118,10 +119,10 @@ bool BatteryPack::checkIfCellsAreAdjacent(const BalanceOpt a, const BalanceOpt b
 
 void BatteryPack::pushProtection() {
 	Log.noticeln("Pushing protection.");
-	// RSNS = 0, SCD_D1:0 = 70μs (0x0), SCD_T2:0 = 33mV (0x1) (ISCD = 4,125A)
-	uint8_t protect1Config = 0b00000001;
-	// OCD_D2:0 = 0x5, OCD_T3:0 = 17mV (0x3) (IOCD = 2,125A)
-	uint8_t protect2Config = 0b01010011;
+	// RSNS = 0, SCD_D1:0 = 200μs (0x2), SCD_T2:0 = 33mV (0x1) (ISCD = 4,125A)
+	uint8_t protect1Config = 0b00010001;
+	// OCD_D2:0 = 160ms (0x4), OCD_T3:0 = 17mV (0x3) (IOCD = 2,125A)
+	uint8_t protect2Config = 0b01000011;
 	// UV_D1:0 = 0x1 (4s), OV_D1:0 = 0x1 (2s)
 	uint8_t protect3Config = 0b01010000;
 	// Desired overvoltage protection: 4.23 Volt

@@ -4,18 +4,16 @@
 
 class BatteryPack {
 	public:
-		BatteryPack(); // Constructor
-
 		// Maps will be sorted automatically based on the key.
 
 		std::map<SysStatusOpt, bool> sysStatus = {
-			{SysStatusOpt::CC_READY, 0},
-			{SysStatusOpt::OVRD_ALERT, 0},
-			{SysStatusOpt::UV, 0},
-			{SysStatusOpt::OV, 0},
-			{SysStatusOpt::SCD, 0},
-			{SysStatusOpt::OCD, 0}
-		}; 
+			{SysStatusOpt::CC_READY, false},
+			{SysStatusOpt::OVRD_ALERT, false},
+			{SysStatusOpt::UV, false},
+			{SysStatusOpt::OV, false},
+			{SysStatusOpt::SCD, false},
+			{SysStatusOpt::OCD, false}
+		};
 		std::map<BalanceOpt, bool> balanceCells = {
 			{BalanceOpt::CB1, false},
 			{BalanceOpt::CB2, false},
@@ -27,17 +25,17 @@ class BatteryPack {
 			{registerMap::VC5_HI, 0}
 		};
 		std::map<SysControlOpt, bool> sysControl1 = {
-			{SysControlOpt::ADC_EN, 1},
-			{SysControlOpt::TEMP_SEL, 0},
-			{SysControlOpt::SHUT_A, 0},
-			{SysControlOpt::SHUT_B, 0}
+			{SysControlOpt::ADC_EN, true},
+			{SysControlOpt::TEMP_SEL, false},
+			{SysControlOpt::SHUT_A, false},
+			{SysControlOpt::SHUT_B, false}
 		}; 
 		std::map<SysControlOpt, bool> sysControl2 = {
-			{SysControlOpt::DELAY_DIS, 0},
-			{SysControlOpt::CC_EN, 1},
-			{SysControlOpt::CC_ONESHOT, 0},
-			{SysControlOpt::DSG_ON, 1},
-			{SysControlOpt::CHG_ON, 1}
+			{SysControlOpt::DELAY_DIS, false},
+			{SysControlOpt::CC_EN, true},
+			{SysControlOpt::CC_ONESHOT, false},
+			{SysControlOpt::DSG_ON, true},
+			{SysControlOpt::CHG_ON, true}
 		};
 		float temp; 
 		uint16_t voltage; 

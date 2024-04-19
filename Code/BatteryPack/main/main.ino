@@ -4,7 +4,6 @@ given configuration.
 */
 
 #include <algorithm>
-#include <Arduino.h>
 #include <ArduinoLog.h>
 #include <cstdint>
 #include <functional>
@@ -21,11 +20,6 @@ given configuration.
 BatteryPack pack;
 
 bool faultHandled = false;
-
-void handleSysStatusFault(BatteryPack &pack);
-void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &minVoltage);
-void performBatteryState(BatteryPack &pack);
-
 // BLEApp bleApp;
 
 // Runs once
@@ -35,6 +29,8 @@ void setup() {
     Log.begin(LOG_LEVEL_VERBOSE, &Serial);
 
     // bleApp.setup();
+    Wire.begin(); // Must be executed inside the main.ino file, not any other included file etc.. Otherwise the Arduino will crash due to some reason.
+	Wire.setClock(100000);
 
     Log.noticeln("\n************* The Last Minute Life Saver Power Bank *************");
     Log.noticeln("Starting up...");
@@ -57,7 +53,6 @@ void setup() {
     pack.pushControl();
     pack.pushProtection();
     pack.pushBalancing();
-
     Log.noticeln("Start up complete.\n");
 }
 
@@ -83,9 +78,20 @@ void loop() {
     
     static unsigned long statePreviousMillis = 0;
     every(5000, &statePreviousMillis, []() {
-        Log.noticeln("Pack state: %d; pack current: %d; pack voltage: %d.", pack.state, pack.current, pack.voltage, 
+        Log.noticeln("Pack state: %d; pack current: %d; pack voltage: %d (Cell 1: %d; Cell 2: %d; Cell 5: %d)", pack.state, pack.current, pack.voltage, 
                     pack.voltages[registerMap::VC1_HI], pack.voltages[registerMap::VC2_HI], pack.voltages[registerMap::VC5_HI]);
     });
+
+    // Serial input
+    // if (Serial.available()) {
+    //     String command = Serial.readStringUntil('\n');
+    //     if (command == "balance") {
+    //         pack.balanceCells[BalanceOpt::CB5] = true;
+    //         pack.pushBalancing();
+    //     } else if (command == "clear_scd") {
+    //         write
+    //     }
+    // }
 
     if (pack.sysStatus[SysStatusOpt::UV] == true || pack.sysStatus[SysStatusOpt::OV] == true ||
         pack.sysStatus[SysStatusOpt::SCD] == true || pack.sysStatus[SysStatusOpt::OCD] == true)
@@ -100,15 +106,6 @@ void loop() {
 
     performBatteryState(pack);
 
-    // // Serial input
-    // if (Serial.available()) {
-    //     String command = Serial.readStringUntil('\n');
-    //     if (command == "balance") {
-    //         balanceCells[balanceOpt::CB1] = true;
-    //         pushBalancing();
-    //     }
-    // }
-
     // Keep at end of loop function
     // bleApp.loop();
 
@@ -119,9 +116,9 @@ void loop() {
 void handleSysStatusFault(BatteryPack &pack) {
     // Does the same for UV, OV, SCD and OCD events.
     std::map<SysStatusOpt, bool> &status = pack.sysStatus;
-    Log.error("System status fault detected.");
+    Log.error("System status fault detected. ");
     Log.error("[UV: %T, OV: %T] ", status[SysStatusOpt::UV], status[SysStatusOpt::OV]);
-    Log.error("[OV: %T, SCD: %T]\n", status[SysStatusOpt::SCD], status[SysStatusOpt::OCD]);
+    Log.errorln("[SCD: %T, OCD: %T]", status[SysStatusOpt::SCD], status[SysStatusOpt::OCD]);
     pack.sysControl2[SysControlOpt::DSG_ON] = false;
     pack.sysControl2[SysControlOpt::CHG_ON] = false;
     pack.pushControl();
@@ -150,20 +147,24 @@ void performBatteryState(BatteryPack &pack) {
     
     // Check lower voltage limits
     if (dsgOn == true && minVoltage.second <= lowerVoltageLimit) {
+        Log.noticeln("Turning off discharging, minimum voltage (%d) is <= lower voltage limit (%d).", minVoltage.second, lowerVoltageLimit);
         dsgOn = false;
         pack.pushControl();
     } else if (pack.state != BatteryState::Balancing && dsgOn == false && minVoltage.second >= lowerVoltageLimit+300) {
+        Log.noticeln("Turning discharging back on.");
         dsgOn = true;
         pack.pushControl();
     }
     
     // Check upper voltage limits
     if (chgOn == true && maxVoltage.second >= upperVoltageLimit) {
+        Log.noticeln("Turning off charging, maximum voltage (%d) is >= upper voltage limit (%d).", maxVoltage.second, upperVoltageLimit);
         chgOn = false;
         dsgOn = false; // Needs to be turned off to not interfere with balancing.
         pack.pushControl();
         pack.state = BatteryState::Balancing;
     } else if (pack.state != BatteryState::Balancing && chgOn == false && maxVoltage.second <=  upperVoltageLimit - 100) {
+        Log.noticeln("Turning charging back on.");
         chgOn = true;
         pack.pushControl();
     }
