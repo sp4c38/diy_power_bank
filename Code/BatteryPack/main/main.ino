@@ -50,8 +50,11 @@ void setup() {
     pack.readOffsetAndGain();
     Log.verboseln("ADC offset: %d; ADC gain: %d", pack.adcOffset, pack.adcGain);
 
-    pack.pushControl();
+    // The circuit that is permanently connected to PACK+ and PACK- will draw some high current for a short time on start up because some capacitors
+    // of the connected circuit will charge. It's important to configure protection before turning on the CHG and DSG FETs because
+    // the standard protection thresholds are too low to account for the current drawn by the capacitors.
     pack.pushProtection();
+    pack.pushControl();
     pack.pushBalancing();
     Log.noticeln("Start up complete.\n");
 }
@@ -78,20 +81,25 @@ void loop() {
     
     static unsigned long statePreviousMillis = 0;
     every(5000, &statePreviousMillis, []() {
-        Log.noticeln("Pack state: %d; pack current: %d; pack voltage: %d (Cell 1: %d; Cell 2: %d; Cell 5: %d)", pack.state, pack.current, pack.voltage, 
-                    pack.voltages[registerMap::VC1_HI], pack.voltages[registerMap::VC2_HI], pack.voltages[registerMap::VC5_HI]);
+        Log.noticeln("Pack state: %s; DSG: %T; CHG: %T; pack current: %d; pack voltage: %d (Cell 1: %d; Cell 2: %d; Cell 5: %d)", batteryStateToStringName.at(pack.state).c_str(), pack.sysControl2[SysControlOpt::DSG_ON], pack.sysControl2[SysControlOpt::CHG_ON], 
+                    pack.current, pack.voltage, pack.voltages[registerMap::VC1_HI], pack.voltages[registerMap::VC2_HI], pack.voltages[registerMap::VC5_HI]);
     });
 
     // Serial input
-    // if (Serial.available()) {
-    //     String command = Serial.readStringUntil('\n');
-    //     if (command == "balance") {
-    //         pack.balanceCells[BalanceOpt::CB5] = true;
-    //         pack.pushBalancing();
-    //     } else if (command == "clear_scd") {
-    //         write
-    //     }
-    // }
+    if (Serial.available()) {
+        String command = Serial.readStringUntil('\n');
+        if (command == "balance") {
+            pack.sysControl2[SysControlOpt::DSG_ON] = false;
+            pack.sysControl2[SysControlOpt::CHG_ON] = false;
+            pack.pushControl();
+            pack.balanceCells[BalanceOpt::CB2] = true;
+            pack.pushBalancing();
+        } else if (command == "ship_mode") {
+            pack.transitionToSHIPMode();
+        } else if (command == "clear_scd") {
+            writeRegister(I2C_BQ76920_ADDRESS, registerMap::SYS_STAT, 0b00000010);
+        }
+    }
 
     if (pack.sysStatus[SysStatusOpt::UV] == true || pack.sysStatus[SysStatusOpt::OV] == true ||
         pack.sysStatus[SysStatusOpt::SCD] == true || pack.sysStatus[SysStatusOpt::OCD] == true)
@@ -102,10 +110,15 @@ void loop() {
         }
         delay(500);
         return;
-    } else { faultHandled = false; }
+    } else {
+        if (faultHandled == true) {
+            Log.noticeln("Fault cleared.");
+            faultHandled = false;
+        }
+    }
 
-    performBatteryState(pack);
-
+    // performBatteryState(pack);
+ 
     // Keep at end of loop function
     // bleApp.loop();
 
@@ -129,12 +142,14 @@ void handleSysStatusFault(BatteryPack &pack) {
 }
 
 void performBatteryState(BatteryPack &pack) {
-    if (pack.state == BatteryState::Idle && pack.current > 0) {
-        pack.state = BatteryState::Charging;
-    } else if (pack.state == BatteryState::Idle && pack.current < 0) {
-        pack.state = BatteryState::Discharging;
-    } else if (pack.state == BatteryState::Discharging && pack.current == 0) {
-        pack.state = BatteryState::Idle;
+    if (pack.state != BatteryState::Balancing) {
+        if (pack.current > 0) {
+            pack.state = BatteryState::Charging;
+        } else if (pack.current < dischargingThreshold) {
+            pack.state = BatteryState::Discharging;
+        } else {
+            pack.state = BatteryState::Idle;
+        }
     }
     
     bool &dsgOn = pack.sysControl2[SysControlOpt::DSG_ON];
@@ -160,7 +175,7 @@ void performBatteryState(BatteryPack &pack) {
     if (chgOn == true && maxVoltage.second >= upperVoltageLimit) {
         Log.noticeln("Turning off charging, maximum voltage (%d) is >= upper voltage limit (%d).", maxVoltage.second, upperVoltageLimit);
         chgOn = false;
-        dsgOn = false; // Needs to be turned off to not interfere with balancing.
+        dsgOn = false;
         pack.pushControl();
         pack.state = BatteryState::Balancing;
     } else if (pack.state != BatteryState::Balancing && chgOn == false && maxVoltage.second <=  upperVoltageLimit - 100) {
@@ -183,7 +198,7 @@ void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &min
             uint8_t voltageCell = balanceCellToVoltageCell.at(cell.first);
             unsigned int difference = pack.voltages[voltageCell] - minVoltage.second;
             if (difference <= balancingDifference) {
-                Log.noticeln("Turning off balancing for %s.", balanceCellToStringName.at(cell.first));
+                Log.noticeln("Turning off balancing for %s.", balanceCellToStringName.at(cell.first).c_str());
                 cell.second = false;
                 pack.pushBalancing();
             } else {
@@ -212,7 +227,7 @@ void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &min
         return;
     } else if (cellsToBalance.size() == 1) {
         BalanceOpt balanceOpt = voltageCellToBalanceOpt.at(cellsToBalance[0].first);
-        Log.noticeln("Starting to balance single %s.", balanceCellToStringName.at(balanceOpt));
+        Log.noticeln("Starting to balance single %s.", balanceCellToStringName.at(balanceOpt).c_str());
         pack.balanceCells[balanceOpt] = true;
         pack.pushBalancing();
     } else if (cellsToBalance.size() == 2) {
@@ -220,10 +235,10 @@ void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &min
         BalanceOpt cell2 = voltageCellToBalanceOpt.at(cellsToBalance[1].first);
 
         if (pack.checkIfCellsAreAdjacent(cell1, cell2)) {
-            Log.noticeln("Need to balance adjacent cells but as this isn't possible, first starting to balance %s.", balanceCellToStringName.at(cell1));
+            Log.noticeln("Need to balance adjacent cells but as this isn't possible, first starting to balance %s.", balanceCellToStringName.at(cell1).c_str());
             pack.balanceCells[cell1] = true;
         } else {
-            Log.noticeln("Balancing %s and %s at once. They aren't adjacent.", balanceCellToStringName.at(cell1), balanceCellToStringName.at(cell2));
+            Log.noticeln("Balancing %s and %s at once. They aren't adjacent.", balanceCellToStringName.at(cell1).c_str(), balanceCellToStringName.at(cell2).c_str());
             pack.balanceCells[cell1] = true;
             pack.balanceCells[cell2] = true;
         }

@@ -119,8 +119,8 @@ bool BatteryPack::checkIfCellsAreAdjacent(const BalanceOpt a, const BalanceOpt b
 
 void BatteryPack::pushProtection() {
 	Log.noticeln("Pushing protection.");
-	// RSNS = 0, SCD_D1:0 = 200μs (0x2), SCD_T2:0 = 33mV (0x1) (ISCD = 4,125A)
-	uint8_t protect1Config = 0b00010001;
+	// RSNS = 0, SCD_D1:0 = 400μs (0x3), SCD_T2:0 = 100mV (0x7) (ISCD = 12,5A)
+	uint8_t protect1Config = 0b00011111;
 	// OCD_D2:0 = 160ms (0x4), OCD_T3:0 = 17mV (0x3) (IOCD = 2,125A)
 	uint8_t protect2Config = 0b01000011;
 	// UV_D1:0 = 0x1 (4s), OV_D1:0 = 0x1 (2s)
