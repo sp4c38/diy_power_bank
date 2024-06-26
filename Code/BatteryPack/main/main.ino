@@ -117,7 +117,7 @@ void loop() {
         }
     }
 
-    // performBatteryState(pack);
+    performBatteryState(pack);
  
     // Keep at end of loop function
     // bleApp.loop();
@@ -165,7 +165,7 @@ void performBatteryState(BatteryPack &pack) {
         Log.noticeln("Turning off discharging, minimum voltage (%d) is <= lower voltage limit (%d).", minVoltage.second, lowerVoltageLimit);
         dsgOn = false;
         pack.pushControl();
-    } else if (pack.state != BatteryState::Balancing && dsgOn == false && minVoltage.second >= lowerVoltageLimit+300) {
+    } else if (pack.state != BatteryState::Balancing && dsgOn == false && minVoltage.second >= lowerVoltageLimit+400) {
         Log.noticeln("Turning discharging back on.");
         dsgOn = true;
         pack.pushControl();
@@ -178,7 +178,7 @@ void performBatteryState(BatteryPack &pack) {
         dsgOn = false;
         pack.pushControl();
         pack.state = BatteryState::Balancing;
-    } else if (pack.state != BatteryState::Balancing && chgOn == false && maxVoltage.second <=  upperVoltageLimit - 100) {
+    } else if (pack.state != BatteryState::Balancing && chgOn == false && maxVoltage.second <=  upperVoltageLimit-400) {
         Log.noticeln("Turning charging back on.");
         chgOn = true;
         pack.pushControl();
