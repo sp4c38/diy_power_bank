@@ -98,6 +98,7 @@ const std::map<BalanceOpt, std::string> balanceCellToStringName = {
 	{BalanceOpt::CB5, "Cell 5"}
 };
 
+// Battery state machine. Only allow one of the given battery states.
 enum class BatteryState {
 	SHIPMode,
 	Charging,

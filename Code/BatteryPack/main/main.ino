@@ -33,9 +33,7 @@ void setup() {
 	Wire.setClock(100000);
 
     Log.noticeln("\n************* The Last Minute Life Saver Power Bank *************");
-    Log.noticeln("Starting up...");
-    Log.noticeln("Please boot the BQ76920 device. Waiting 1s...");
-    delay(1000);
+    Log.noticeln("Assuming that the BQ76920 device is booted.");
 
     // Write CC_CFG register
     writeRegister(I2C_BQ76920_ADDRESS, registerMap::CC_CFG, 0x19);
@@ -67,7 +65,7 @@ void loop() {
         return;
     }
     pack.updateTemperature();
-    if (!(pack.temp >= -35.0f && pack.temp <= 80.0f)) {
+    if (!(pack.temp >= -35.0f && pack.temp <= 60.0f)) {
         Log.warning("Internal die temperature outside of operating bounds: %F.", pack.temp);
         pack.transitionToSHIPMode();
         return;
@@ -105,6 +103,7 @@ void loop() {
         pack.sysStatus[SysStatusOpt::SCD] == true || pack.sysStatus[SysStatusOpt::OCD] == true)
     {
         if (!faultHandled) {
+            Log.noticeln("Fault occurred.")
             handleSysStatusFault(pack);
             faultHandled = true;
         }
