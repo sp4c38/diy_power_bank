@@ -59,7 +59,7 @@ void setup() {
 
 // Runs repeatedly
 void loop() {
-    if (pack.state == BatteryState::SHIPMode) {
+    if (pack.state.currentState == BatteryState::State::SHIPMode) {
         Log.noticeln("Pack in SHIP mode.");
         delay(3000);
         return;
@@ -79,7 +79,7 @@ void loop() {
     
     static unsigned long statePreviousMillis = 0;
     every(5000, &statePreviousMillis, []() {
-        Log.noticeln("Pack state: %s; DSG: %T; CHG: %T; pack current: %d; pack voltage: %d (Cell 1: %d; Cell 2: %d; Cell 5: %d)", batteryStateToStringName.at(pack.state).c_str(), pack.sysControl2[SysControlOpt::DSG_ON], pack.sysControl2[SysControlOpt::CHG_ON], 
+        Log.noticeln("Pack state: %s; DSG: %T; CHG: %T; pack current: %d; pack voltage: %d (Cell 1: %d; Cell 2: %d; Cell 5: %d)", pack.state.getStringRepresentation().c_str(), pack.sysControl2[SysControlOpt::DSG_ON], pack.sysControl2[SysControlOpt::CHG_ON], 
                     pack.current, pack.voltage, pack.voltages[registerMap::VC1_HI], pack.voltages[registerMap::VC2_HI], pack.voltages[registerMap::VC5_HI]);
     });
 
@@ -103,7 +103,7 @@ void loop() {
         pack.sysStatus[SysStatusOpt::SCD] == true || pack.sysStatus[SysStatusOpt::OCD] == true)
     {
         if (!faultHandled) {
-            Log.noticeln("Fault occurred.")
+            Log.noticeln("Fault occurred.");
             handleSysStatusFault(pack);
             faultHandled = true;
         }
@@ -141,13 +141,20 @@ void handleSysStatusFault(BatteryPack &pack) {
 }
 
 void performBatteryState(BatteryPack &pack) {
-    if (pack.state != BatteryState::Balancing) {
+    if (pack.state.currentState != BatteryState::State::Balancing) {
         if (pack.current > 0) {
-            pack.state = BatteryState::Charging;
-        } else if (pack.current < dischargingThreshold) {
-            pack.state = BatteryState::Discharging;
-        } else {
-            pack.state = BatteryState::Idle;
+            if (pack.state.currentState != BatteryState::State::Charging) {
+                pack.state.setState(BatteryState::State::Charging);
+                pack.state.setChargingMode(BatteryState::ChargingMode::ConstantCurrent);
+                Log.noticeln("Charging enabled by starting with the CC (constant current) phase.");
+            }
+        }
+        if (pack.state.currentState != BatteryState::State::Charging) {
+            if (pack.current < dischargingThreshold) {
+                pack.state.setState(BatteryState::State::Discharging);
+            } else {
+                pack.state.setState(BatteryState::State::Idle);
+            }
         }
     }
     
@@ -164,26 +171,49 @@ void performBatteryState(BatteryPack &pack) {
         Log.noticeln("Turning off discharging, minimum voltage (%d) is <= lower voltage limit (%d).", minVoltage.second, lowerVoltageLimit);
         dsgOn = false;
         pack.pushControl();
-    } else if (pack.state != BatteryState::Balancing && dsgOn == false && minVoltage.second >= lowerVoltageLimit+400) {
+    }
+    if ((pack.state.currentState == BatteryState::State::Idle || pack.state.currentState == BatteryState::State::Charging)
+        && dsgOn == false && minVoltage.second >= lowerVoltageLimit+400) {
         Log.noticeln("Turning discharging back on.");
         dsgOn = true;
         pack.pushControl();
     }
     
-    // Check upper voltage limits
-    if (chgOn == true && maxVoltage.second >= upperVoltageLimit) {
-        Log.noticeln("Turning off charging, maximum voltage (%d) is >= upper voltage limit (%d).", maxVoltage.second, upperVoltageLimit);
-        chgOn = false;
-        dsgOn = false;
-        pack.pushControl();
-        pack.state = BatteryState::Balancing;
-    } else if (pack.state != BatteryState::Balancing && chgOn == false && maxVoltage.second <=  upperVoltageLimit-400) {
+    if (pack.state.currentState == BatteryState::State::Charging) {
+        if (pack.state.chargingMode == BatteryState::ChargingMode::ConstantCurrent) {
+            if (maxVoltage.second >= upperVoltageLimit) {
+                Log.noticeln("Turning off charging, maximum voltage (%d) is >= upper voltage limit (%d).", maxVoltage.second, upperVoltageLimit);
+                chgOn = false;
+                dsgOn = false;
+                pack.pushControl();
+                pack.state.setState(BatteryState::State::Balancing);
+            }
+        }
+        if (pack.state.chargingMode == BatteryState::ChargingMode::ConstantVoltage) {
+            if (chgOn == false) {
+                Log.noticeln("Turning charging back on. Now performing the CV (constant voltage) phase.");
+                chgOn = true;
+                pack.pushControl();
+                return;
+            }
+            if (pack.current <= cvCurrentCutOff) {
+                Log.noticeln("Charging completed as pack current %d is smaller or equal the cut off current of %d.", pack.current, cvCurrentCutOff);
+                pack.state.setState(BatteryState::State::Idle);
+                chgOn = false;
+                dsgOn = true;
+                pack.pushControl();
+            }
+        }
+    }
+    if ((pack.state.currentState == BatteryState::State::Idle || pack.state.currentState == BatteryState::State::Discharging) 
+        && chgOn == false && maxVoltage.second <=  upperVoltageLimit-400)
+    {
         Log.noticeln("Turning charging back on.");
         chgOn = true;
         pack.pushControl();
     }
     
-    if (pack.state == BatteryState::Balancing) {
+    if (pack.state.currentState == BatteryState::State::Balancing) {
         performBalancing(pack, minVoltage);
     }
 }
@@ -221,8 +251,9 @@ void performBalancing(BatteryPack &pack, std::pair<const uint8_t, uint16_t> &min
     }
 
     if (cellsToBalance.size() == 0) {
-        Log.noticeln("All cells are balanced. Transitioning to idle state.");
-        pack.state = BatteryState::Idle;
+        Log.noticeln("All cells are balanced. Transitioning to charging state with contant voltage mode.");
+        pack.state.setState(BatteryState::State::Charging);
+        pack.state.setChargingMode(BatteryState::ChargingMode::ConstantVoltage);
         return;
     } else if (cellsToBalance.size() == 1) {
         BalanceOpt balanceOpt = voltageCellToBalanceOpt.at(cellsToBalance[0].first);

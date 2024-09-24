@@ -72,7 +72,7 @@ void BatteryPack::transitionToSHIPMode() {
 	sysControl1[SysControlOpt::SHUT_A] = true;
 	sysControl1[SysControlOpt::SHUT_B] = false;
 	pushControl();
-	state = BatteryState::SHIPMode;
+	state.setState(BatteryState::State::SHIPMode);
 }
 
 void BatteryPack::pushBalancing() {

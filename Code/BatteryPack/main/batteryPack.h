@@ -40,7 +40,7 @@ class BatteryPack {
 		float temp; 
 		uint16_t voltage; 
 		int16_t current;
-		BatteryState state = BatteryState::Idle; 
+		BatteryState state = BatteryState(BatteryState::State::Idle);
 		uint adcGain;
 		int8_t adcOffset;
 		

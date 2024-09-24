@@ -5,6 +5,7 @@
 #define REGISTER_H
 
 const uint16_t upperVoltageLimit = 4190; // in mV
+const int16_t cvCurrentCutOff = 200; // in mA
 const uint16_t lowerVoltageLimit = 2600; // in mV
 
 // The variable balancingDifference must be smaller than allowedBalancingDifference. This means that the cells get balanced lower than the amount needed to start balancing again.
@@ -99,20 +100,72 @@ const std::map<BalanceOpt, std::string> balanceCellToStringName = {
 };
 
 // Battery state machine. Only allow one of the given battery states.
-enum class BatteryState {
-	SHIPMode,
-	Charging,
-	Balancing,
-	Discharging,
-	Idle
-};
+struct BatteryState {
+	enum class State {
+		SHIPMode,
+		Charging,
+		Balancing,
+		Discharging,
+		Idle
+	} currentState;
 
-const std::map<BatteryState, std::string> batteryStateToStringName = {
-	{BatteryState::SHIPMode, "SHIP mode"},
-	{BatteryState::Charging, "Charging"},
-	{BatteryState::Balancing, "Balancing"},
-	{BatteryState::Discharging, "Discharging"},
-	{BatteryState::Idle, "Idle"}
+	enum class ChargingMode {
+		None,
+		ConstantCurrent,
+		ConstantVoltage
+	} chargingMode = ChargingMode::None;
+
+ 	BatteryState(State initialState = State::Idle, ChargingMode initialChargingMode = ChargingMode::None)
+		: currentState(initialState), chargingMode(initialChargingMode) {}
+
+	void setState(State newState) {
+		currentState = newState;
+		if (currentState != State::Charging) {
+			chargingMode = ChargingMode::None;
+		}
+	}
+
+	void setChargingMode(ChargingMode newMode) {
+		if (currentState == State::Charging) {
+			chargingMode = newMode;
+		} else {
+			// Handle error: Cannot set charging mode when not charging
+			Log.fatalln("Tried to set charging mode while not currently in the charging state (current state: %s).", getStringRepresentation());
+			exit(1);
+		}
+	}
+	
+	std::string getStringRepresentation() const {
+		switch (currentState) {
+			case State::SHIPMode:
+				return "SHIP mode";
+	
+			case State::Charging:
+				// Differentiate based on ChargingMode
+				switch (chargingMode) {
+					case ChargingMode::ConstantCurrent:
+						return "Charging (Constant Current)";
+					case ChargingMode::ConstantVoltage:
+						return "Charging (Constant Voltage)";
+					case ChargingMode::None:
+						return "Charging";
+					default:
+						return "Charging (Unknown Mode)";
+				}
+	
+			case State::Balancing:
+				return "Balancing";
+	
+			case State::Discharging:
+				return "Discharging";
+	
+			case State::Idle:
+				return "Idle";
+	
+			default:
+				return "Unknown State";
+		}
+	}
 };
 
 #endif
