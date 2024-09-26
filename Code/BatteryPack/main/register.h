@@ -11,8 +11,8 @@ const uint16_t lowerVoltageLimit = 2600; // in mV
 // The variable balancingDifference must be smaller than allowedBalancingDifference. This means that the cells get balanced lower than the amount needed to start balancing again.
 // The battery voltage jiggles a bit around its actual value. So if allowedBalancingDifference and balancingDifference were the same we would frequently reenable balancing just because the
 // battery hops a little bit higher than allowedBalancingDifference due to its internal chemistry etc..
-const uint16_t allowedBalancingDifference = 40; // Maximum difference that is allowed between cells to not start balancing.
-const uint16_t balancingDifference = 10; // Balance to this difference when balancing gets enabled.
+const uint16_t allowedBalancingDifference = 30; // Maximum difference that is allowed between cells to not start balancing.
+const uint16_t balancingDifference = 5; // Balance to this difference when balancing is enabled.
 
 const int16_t dischargingThreshold = -50; // in mA; If the current drops below this value, the pack is considered to be discharging.
 
