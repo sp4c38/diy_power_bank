@@ -1,13 +1,27 @@
-# Powerbank Firmware
+# Powerbank Firmware and App
 
 Firmware for the Arduino Nano 33 BLE that supervises the BQ76920-based power
-bank PCB.
+bank PCB, plus the native SwiftUI iOS app that talks to it over BLE.
 
 ## Layout
 
 - `PowerbankFirmware/` - Arduino sketch and C++ source files.
+- `Powerbank/` - SwiftUI iOS app.
 - `Getting Started with Bluetooth Low Energy.pdf` - BLE reference material.
 - `requirements.txt` - historical dependency note from the old setup.
+
+## Firmware Architecture
+
+- `Bq76920Driver` owns CRC I2C, calibration, raw ADC reads, FET control,
+  protection registers, balancing, fault clearing and SHIP mode.
+- `PackMonitor` converts/filter readings and marks telemetry untrusted if cell
+  measurements jump or become implausible.
+- `SafetyPolicy` decides whether charge, discharge and balancing are allowed.
+- `Balancer` performs conservative one-cell-at-a-time passive balancing.
+- `PowerManager` turns the output off after idle and requests SHIP after very
+  long idle.
+- `BLEApp` exposes telemetry and guarded commands to the iOS app.
+- `SerialConsole` mirrors the app commands for bench testing.
 
 ## Board
 
@@ -42,16 +56,15 @@ Serial commands:
 - `help` - print the command list.
 - `status` - print state, FET status, current, pack voltage, die temperature and cell voltages.
 - `faults` - print BQ76920 fault/status bits.
+- `raw` - print raw ADC/register diagnostics.
 - `clear_faults` - clear UV, OV, SCD and OCD fault bits.
-- `ship` - enter BQ76920 SHIP mode.
-- `charge_on` / `charge_off` - toggle the CHG FET. `charge_off` is a sticky
-  manual override until `charge_on` is sent.
-- `discharge_on` / `discharge_off` - toggle the DSG FET. `discharge_off` is a
-  sticky manual override until `discharge_on` is sent.
+- `output_on` / `output_off` - request the normal discharge/output path.
+- `ship!` - enter BQ76920 SHIP mode. The `!` is intentional confirmation.
+- `charge_on!` / `charge_off` - developer CHG FET override.
 - `balance_off` - force all cell balancing off.
 
-Manual/automatic balancing is disabled for now. The old `balance` command is kept
-as a guarded no-op so it cannot accidentally enable cell balancing.
+Balancing is automatic only when readings are trusted, cells are near the top of
+charge, current is near idle, and only one cell needs bleeding.
 
 Compile the firmware:
 
@@ -64,6 +77,25 @@ Upload the firmware:
 ```sh
 '/Applications/Arduino IDE.app/Contents/Resources/app/lib/backend/resources/arduino-cli' upload -p /dev/cu.usbmodem112201 --fqbn arduino:mbed_nano:nano33ble Code/PowerbankFirmware
 ```
+
+Build the iOS app:
+
+```sh
+xcodebuild -project Code/Powerbank/Powerbank.xcodeproj -scheme Powerbank -destination 'platform=iOS Simulator,name=iPhone 17' build
+```
+
+## BLE Protocol
+
+Service UUID: `7E571000-40A1-4E31-8E9D-4AC0D8B2A100`
+
+- Telemetry: `7E571001-40A1-4E31-8E9D-4AC0D8B2A100`, read + notify, packed
+  little-endian protocol v1 payload.
+- Command: `7E571002-40A1-4E31-8E9D-4AC0D8B2A100`, write, two bytes:
+  command id and optional confirmation byte `0xA5`.
+- Command result: `7E571003-40A1-4E31-8E9D-4AC0D8B2A100`, read + notify,
+  UTF-8 status text.
+- Device info: `7E571004-40A1-4E31-8E9D-4AC0D8B2A100`, read, UTF-8 firmware
+  and protocol version.
 
 ## Bring-Up Notes
 

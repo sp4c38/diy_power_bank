@@ -1,111 +1,135 @@
 #include <ArduinoLog.h>
-#include <cstdint>
-#include <functional>
 #include <Wire.h>
 
-#include "register.h"
 #include "utils.h"
 
 const uint8_t crc8_ccitt_small_table[16] = {
-	0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15,
-	0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d
+    0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15,
+    0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d
 };
 
-// numberBytes are the expected data bytes; the amount must not include the CRC bytes
 bool readRegisters(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data, uint8_t numberBytes) {
-	uint8_t buffer[2*numberBytes+1] = { // Multiply by 2 to account for the CRC data bytes
-		(i2cAddress << 1) | 1, // Slave address and R/W bit
-	};
+    uint8_t buffer[2 * numberBytes + 1] = {
+        (uint8_t) ((i2cAddress << 1) | 1),
+    };
 
-	// Read
-	Wire.beginTransmission(i2cAddress);
-	Wire.write(registerAddress);
-	uint endTransmissionResponse = Wire.endTransmission(true); // false means a repeated start will be sent instead of releasing the bus.
-	if (endTransmissionResponse != 0) {
-		Log.errorln("Read setup failed for register %X; response code: %d", registerAddress, endTransmissionResponse);
-		return false;
-	}
-	uint8_t requestedBytes = 2*numberBytes;
-	uint8_t receivedBytes = Wire.requestFrom(i2cAddress, requestedBytes);
-	if (receivedBytes != requestedBytes) {
-		Log.errorln("Expected %d bytes from register %X but got %d.", requestedBytes, registerAddress, receivedBytes);
-		return false;
-	}
+    Wire.beginTransmission(i2cAddress);
+    Wire.write(registerAddress);
+    uint endTransmissionResponse = Wire.endTransmission(true);
+    if (endTransmissionResponse != 0) {
+        Log.errorln("Read setup failed for register %X; response code: %d", registerAddress, endTransmissionResponse);
+        return false;
+    }
 
-	for (int i = 0; i < 2*numberBytes; i++) {
-		if (Wire.available()) {
-			buffer[i+1] = Wire.read();
-		} else {
-			Log.errorln("Expected bytes can't be read.");
-			return false;
-		}
-	};
+    uint8_t requestedBytes = 2 * numberBytes;
+    uint8_t receivedBytes = Wire.requestFrom(i2cAddress, requestedBytes);
+    if (receivedBytes != requestedBytes) {
+        Log.errorln("Expected %d bytes from register %X but got %d.", requestedBytes, registerAddress, receivedBytes);
+        return false;
+    }
 
-	// Check CRC
-	// First CRC is calculated over slave address and the first data byte.
-	if (crc8_ccitt(0, buffer, 2) != buffer[2]) {
-		Log.errorln("CRC failed. CRCs of slave address and data byte don't match.");
-		return false;
-	};
-	data[0] = buffer[1];
+    for (int i = 0; i < requestedBytes; i++) {
+        if (!Wire.available()) {
+            Log.errorln("Expected bytes can't be read.");
+            return false;
+        }
+        buffer[i + 1] = Wire.read();
+    }
 
-	for (int i = 0; i < (numberBytes-1); i++) {
-		data[i+1] = buffer[3+i*2];
-		if (crc8_ccitt(0, buffer+3+i*2, 1) != buffer[4+i*2]) {
-			Log.errorln("CRC failed. CRC of data byte %d doesn't match.", i+2);
-			return false;
-		};
-	};
-	return true;
+    if (crc8_ccitt(0, buffer, 2) != buffer[2]) {
+        Log.errorln("CRC failed for register %X first data byte.", registerAddress);
+        return false;
+    }
+    data[0] = buffer[1];
+
+    for (int i = 0; i < (numberBytes - 1); i++) {
+        data[i + 1] = buffer[3 + i * 2];
+        if (crc8_ccitt(0, buffer + 3 + i * 2, 1) != buffer[4 + i * 2]) {
+            Log.errorln("CRC failed for register %X data byte %d.", registerAddress, i + 2);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool readRegister(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data) {
-	uint8_t reading[1];
-	if (!readRegisters(i2cAddress, registerAddress, reading, 1)) {
-		return false;
-	}
-	*data = reading[0];
-	return true;
+    uint8_t reading[1];
+    if (!readRegisters(i2cAddress, registerAddress, reading, 1)) {
+        return false;
+    }
+    *data = reading[0];
+    return true;
 }
 
 bool writeRegister(uint8_t i2cAddress, uint8_t registerAddress, uint8_t data) {
-	// Blocks to send are: 1) Start 2) Slave address 3) Register address 4) Data 5) CRC 6) Stop
-	Wire.beginTransmission(i2cAddress); // 1) and 2) step
-	Wire.write(registerAddress); // 3) step
-	Wire.write(data); // 4) step
+    Wire.beginTransmission(i2cAddress);
+    Wire.write(registerAddress);
+    Wire.write(data);
 
-	// CRC is calculated over slave address (including R/W bit), register address and data.
-	uint8_t crcBuffer[3] = {(I2C_BQ76920_ADDRESS << 1) | 0, registerAddress, data};
-	uint8_t crc = crc8_ccitt(0, crcBuffer, 3);
+    uint8_t crcBuffer[3] = {(uint8_t) ((i2cAddress << 1) | 0), registerAddress, data};
+    uint8_t crc = crc8_ccitt(0, crcBuffer, 3);
+    Wire.write(crc);
 
-	Wire.write(crc);
-	uint response = Wire.endTransmission();
-	if (response != 0) {
-	  Log.errorln("Write failed; response code: %d", response);
-	  return false;
-	} else {
-	  Log.noticeln("Write: register %X; data: %X; CRC: %X successful.", registerAddress, data, crc);
-	};
-	return true;
+    uint response = Wire.endTransmission();
+    if (response != 0) {
+        Log.errorln("Write failed; response code: %d", response);
+        return false;
+    }
+    return true;
 }
 
-// Copied from the Zephyr project and slightly modified. (https://github.com/zephyrproject-rtos/zephyr/blob/7291450151ef585c7b612f16752dad4ff7df9bf1/lib/crc/crc8_sw.c)
 uint8_t crc8_ccitt(uint8_t val, const uint8_t *buf, size_t cnt) {
-	size_t i;
-
-	for (i = 0; i < cnt; i++) {
-		val ^= buf[i];
-		val = (val << 4) ^ crc8_ccitt_small_table[val >> 4];
-		val = (val << 4) ^ crc8_ccitt_small_table[val >> 4];
-	}
-	return val;
+    for (size_t i = 0; i < cnt; i++) {
+        val ^= buf[i];
+        val = (val << 4) ^ crc8_ccitt_small_table[val >> 4];
+        val = (val << 4) ^ crc8_ccitt_small_table[val >> 4];
+    }
+    return val;
 }
 
-void every(unsigned int interval, unsigned long* previousMillis, std::function<void()> codeBlock) {
-	unsigned long currentMillis = millis();
+void every(unsigned long interval, unsigned long* previousMillis, std::function<void()> codeBlock) {
+    unsigned long currentMillis = millis();
+    if (currentMillis - *previousMillis >= interval) {
+        *previousMillis = currentMillis;
+        codeBlock();
+    }
+}
 
-	if (currentMillis - *previousMillis >= interval) {
-		*previousMillis = currentMillis;
-		codeBlock();
-	}
+uint16_t median5(uint16_t values[5], uint8_t count) {
+    uint16_t sorted[5] = {0, 0, 0, 0, 0};
+    for (uint8_t i = 0; i < count && i < 5; i++) {
+        sorted[i] = values[i];
+    }
+    for (uint8_t i = 0; i < count; i++) {
+        for (uint8_t j = i + 1; j < count; j++) {
+            if (sorted[j] < sorted[i]) {
+                uint16_t temp = sorted[i];
+                sorted[i] = sorted[j];
+                sorted[j] = temp;
+            }
+        }
+    }
+    return sorted[count / 2];
+}
+
+int16_t median5Int(int16_t values[5], uint8_t count) {
+    int16_t sorted[5] = {0, 0, 0, 0, 0};
+    for (uint8_t i = 0; i < count && i < 5; i++) {
+        sorted[i] = values[i];
+    }
+    for (uint8_t i = 0; i < count; i++) {
+        for (uint8_t j = i + 1; j < count; j++) {
+            if (sorted[j] < sorted[i]) {
+                int16_t temp = sorted[i];
+                sorted[i] = sorted[j];
+                sorted[j] = temp;
+            }
+        }
+    }
+    return sorted[count / 2];
+}
+
+const char* boolText(bool value) {
+    return value ? "true" : "false";
 }

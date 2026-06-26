@@ -1,171 +1,210 @@
-#include <map>
-#include <string>
-
 #ifndef REGISTER_H
 #define REGISTER_H
 
-const uint16_t upperVoltageLimit = 4190; // in mV
-const int16_t cvCurrentCutOff = 200; // in mA
-const uint16_t lowerVoltageLimit = 2600; // in mV
+#include <Arduino.h>
+#include <stdint.h>
 
-// The variable balancingDifference must be smaller than allowedBalancingDifference. This means that the cells get balanced lower than the amount needed to start balancing again.
-// The battery voltage jiggles a bit around its actual value. So if allowedBalancingDifference and balancingDifference were the same we would frequently reenable balancing just because the
-// battery hops a little bit higher than allowedBalancingDifference due to its internal chemistry etc..
-const uint16_t allowedBalancingDifference = 30; // Maximum difference that is allowed between cells to not start balancing.
-const uint16_t balancingDifference = 5; // Balance to this difference when balancing is enabled.
+const char FIRMWARE_VERSION[] = "0.2.0";
+const uint8_t BLE_PROTOCOL_VERSION = 1;
 
-const int16_t dischargingThreshold = -50; // in mA; If the current drops below this value, the pack is considered to be discharging.
-
-const uint8_t currentSenseResistance = 8; // in mOhm
-
-// Either the BQ7692003PW or BQ7692003PWR IC must be used. CRC is enabled.
 const uint8_t I2C_BQ76920_ADDRESS = 0x08;
 const uint8_t ALERT_PIN = 10;
 const uint8_t SDA_PIN = 18; // A4
 const uint8_t SCL_PIN = 19; // A5
+const uint8_t currentSenseResistance = 8; // mOhm
+
+namespace registerMap {
+    const uint8_t SYS_STAT = 0x00;
+    const uint8_t CELLBAL1 = 0x01;
+    const uint8_t SYS_CTRL1 = 0x04;
+    const uint8_t SYS_CTRL2 = 0x05;
+    const uint8_t PROTECT1 = 0x06;
+    const uint8_t PROTECT2 = 0x07;
+    const uint8_t PROTECT3 = 0x08;
+    const uint8_t OV_TRIP = 0x09;
+    const uint8_t UV_TRIP = 0x0A;
+    const uint8_t CC_CFG = 0x0B;
+    const uint8_t VC1_HI = 0x0C;
+    const uint8_t VC2_HI = 0x0E;
+    const uint8_t VC5_HI = 0x14;
+    const uint8_t BAT_HI = 0x2A;
+    const uint8_t TS1_HI = 0x2C;
+    const uint8_t CC_HI = 0x32;
+    const uint8_t ADCGAIN1 = 0x50;
+    const uint8_t ADCOFFSET = 0x51;
+    const uint8_t ADCGAIN2 = 0x59;
+}
 
 enum class SysStatusOpt : uint8_t {
-// Store the BIT place number like indicated in the data sheet.
-	CC_READY = 7,
-	OVRD_ALERT = 4,
-	UV = 3,
-	OV = 2,
-	SCD = 1,
-	OCD = 0
-};
-
-enum class BalanceOpt : uint8_t {
-	// Store the BIT place number like indicated in the data sheet.
-	CB1 = 0,
-	CB2 = 1,
-	CB5 = 4
+    CC_READY = 7,
+    DEVICE_XREADY = 5,
+    OVRD_ALERT = 4,
+    UV = 3,
+    OV = 2,
+    SCD = 1,
+    OCD = 0
 };
 
 enum class SysControlOpt : uint8_t {
-	// Store the BIT place number like indicated in the data sheet.
-	// SYS_CTRL1
-	ADC_EN = 4,
-	TEMP_SEL = 3,
-	SHUT_A = 1,
-	SHUT_B = 0,
-
-	// SYS_CTRL2
-	DELAY_DIS = 7,
-	CC_EN = 6,
-	CC_ONESHOT = 5,
-	DSG_ON = 1,
-	CHG_ON = 0
+    ADC_EN = 4,
+    TEMP_SEL = 3,
+    SHUT_A = 1,
+    SHUT_B = 0,
+    DELAY_DIS = 7,
+    CC_EN = 6,
+    CC_ONESHOT = 5,
+    DSG_ON = 1,
+    CHG_ON = 0
 };
 
-namespace registerMap {
-	const uint8_t SYS_STAT = 0x00;
-	const uint8_t CELLBAL1 = 0x01;
-	const uint8_t SYS_CTRL1 = 0x04;
-	const uint8_t SYS_CTRL2 = 0x05;
-	const uint8_t PROTECT1 = 0x06;
-	const uint8_t PROTECT2 = 0x07;
-	const uint8_t PROTECT3 = 0x08;
-	const uint8_t OV_TRIP = 0x09;
-	const uint8_t UV_TRIP = 0x0A;
-	const uint8_t CC_CFG = 0x0B;
+enum BalanceMask : uint8_t {
+    BALANCE_CELL_1 = 1 << 0,
+    BALANCE_CELL_2 = 1 << 1,
+    BALANCE_CELL_5 = 1 << 4
+};
 
-	const uint8_t VC1_HI = 0x0C;
-	const uint8_t VC2_HI = 0x0E;
-	const uint8_t VC5_HI = 0x14;
-	
-	const uint8_t BAT_HI = 0x2A;
-	const uint8_t TS1_HI = 0x2C;
-	const uint8_t CC_HI = 0x32;
-	const uint8_t ADCGAIN1 = 0x50;
-	const uint8_t ADCOFFSET = 0x51;
-	const uint8_t ADCGAIN2 = 0x59;
+namespace thresholds {
+    const uint16_t chargeStopMv = 4150;
+    const uint16_t chargeResumeMv = 4050;
+    const uint16_t lowWarnMv = 3300;
+    const uint16_t outputOffMv = 3100;
+    const uint16_t criticalShipMv = 2850;
+    const uint16_t hardwareOvMv = 4230;
+    const uint16_t hardwareUvMv = 2550;
+
+    const uint16_t balanceMinCellMv = 4000;
+    const uint16_t balanceStartDeltaMv = 35;
+    const uint16_t balanceStopDeltaMv = 12;
+    const unsigned long balanceMaxDurationMs = 30UL * 60UL * 1000UL;
+
+    const int16_t idleCurrentMa = 20;
+    const int16_t loadCurrentMa = -50;
+    const unsigned long outputIdleTimeoutMs = 15UL * 60UL * 1000UL;
+    const unsigned long veryLongIdleShipMs = 3UL * 24UL * 60UL * 60UL * 1000UL;
+
+    const uint16_t maxTrustedCellDeltaMv = 250;
+    const uint16_t maxPackMismatchMv = 650;
+    const uint16_t maxIdleSampleJumpMv = 90;
+    const int16_t minDieTempCentiC = -2000;
+    const int16_t maxDieTempCentiC = 6500;
 }
 
-const std::map<BalanceOpt, uint8_t> balanceCellToVoltageCell = {
-	{BalanceOpt::CB1, registerMap::VC1_HI},
-	{BalanceOpt::CB2, registerMap::VC2_HI},
-	{BalanceOpt::CB5, registerMap::VC5_HI}
+namespace bleUuid {
+    const char service[] = "7E571000-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char telemetry[] = "7E571001-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char command[] = "7E571002-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char commandResult[] = "7E571003-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char deviceInfo[] = "7E571004-40A1-4E31-8E9D-4AC0D8B2A100";
+}
+
+enum class PackState : uint8_t {
+    Starting = 0,
+    Idle = 1,
+    Charging = 2,
+    Discharging = 3,
+    Balancing = 4,
+    OutputOffIdle = 5,
+    Fault = 6,
+    SensorFault = 7,
+    Ship = 8,
+    BqOffline = 9
 };
 
-const std::map<uint8_t, BalanceOpt> voltageCellToBalanceOpt = {
-	{registerMap::VC1_HI, BalanceOpt::CB1},
-	{registerMap::VC2_HI, BalanceOpt::CB2},
-	{registerMap::VC5_HI, BalanceOpt::CB5}
+enum TelemetryFlags : uint16_t {
+    FLAG_MEASUREMENTS_TRUSTED = 1 << 0,
+    FLAG_CHG_ON = 1 << 1,
+    FLAG_DSG_ON = 1 << 2,
+    FLAG_MANUAL_CHARGE_OFF = 1 << 3,
+    FLAG_MANUAL_DISCHARGE_OFF = 1 << 4,
+    FLAG_IDLE_OUTPUT_OFF = 1 << 5,
+    FLAG_BALANCING = 1 << 6,
+    FLAG_LOW_CELL_WARN = 1 << 7,
+    FLAG_STALE = 1 << 8,
+    FLAG_BLE_CONNECTED = 1 << 9
 };
 
-const std::map<BalanceOpt, std::string> balanceCellToStringName = {
-	{BalanceOpt::CB1, "Cell 1"},
-	{BalanceOpt::CB2, "Cell 2"},
-	{BalanceOpt::CB5, "Cell 5"}
+enum FaultFlags : uint16_t {
+    FAULT_NONE = 0,
+    FAULT_BQ_UV = 1 << 0,
+    FAULT_BQ_OV = 1 << 1,
+    FAULT_BQ_SCD = 1 << 2,
+    FAULT_BQ_OCD = 1 << 3,
+    FAULT_SENSOR = 1 << 4,
+    FAULT_TEMP = 1 << 5,
+    FAULT_BQ_OFFLINE = 1 << 6,
+    FAULT_OUTPUT_LOW_CELL = 1 << 7,
+    FAULT_BQ_XREADY = 1 << 8
 };
 
-// Battery state machine. Only allow one of the given battery states.
-struct BatteryState {
-	enum class State {
-		SHIPMode,
-		Charging,
-		Balancing,
-		Discharging,
-		Idle
-	} currentState;
-
-	enum class ChargingMode {
-		None,
-		ConstantCurrent,
-		ConstantVoltage
-	} chargingMode = ChargingMode::None;
-
- 	BatteryState(State initialState = State::Idle, ChargingMode initialChargingMode = ChargingMode::None)
-		: currentState(initialState), chargingMode(initialChargingMode) {}
-
-	void setState(State newState) {
-		currentState = newState;
-		if (currentState != State::Charging) {
-			chargingMode = ChargingMode::None;
-		}
-	}
-
-	void setChargingMode(ChargingMode newMode) {
-		if (currentState == State::Charging) {
-			chargingMode = newMode;
-		} else {
-			// Handle error: Cannot set charging mode when not charging
-			Log.fatalln("Tried to set charging mode while not currently in the charging state (current state: %s).", getStringRepresentation());
-			exit(1);
-		}
-	}
-	
-	std::string getStringRepresentation() const {
-		switch (currentState) {
-			case State::SHIPMode:
-				return "SHIP mode";
-	
-			case State::Charging:
-				// Differentiate based on ChargingMode
-				switch (chargingMode) {
-					case ChargingMode::ConstantCurrent:
-						return "Charging (Constant Current)";
-					case ChargingMode::ConstantVoltage:
-						return "Charging (Constant Voltage)";
-					case ChargingMode::None:
-						return "Charging";
-					default:
-						return "Charging (Unknown Mode)";
-				}
-	
-			case State::Balancing:
-				return "Balancing";
-	
-			case State::Discharging:
-				return "Discharging";
-	
-			case State::Idle:
-				return "Idle";
-	
-			default:
-				return "Unknown State";
-		}
-	}
+enum class CommandId : uint8_t {
+    None = 0,
+    OutputOn = 1,
+    OutputOff = 2,
+    ClearFaults = 3,
+    Ship = 4,
+    BalanceOff = 5,
+    ChargeOn = 6,
+    ChargeOff = 7,
+    DischargeOn = 8,
+    DischargeOff = 9,
+    RawDiagnostics = 10
 };
+
+typedef bool (*CommandHandler)(CommandId command, bool confirmed, char* result, size_t resultSize);
+
+struct BqRawReadings {
+    uint16_t vc1Raw = 0;
+    uint16_t vc2Raw = 0;
+    uint16_t vc5Raw = 0;
+    uint16_t batRaw = 0;
+    int16_t ccRaw = 0;
+    uint16_t tempRaw = 0;
+    uint8_t sysStat = 0;
+    uint8_t sysCtrl1 = 0;
+    uint8_t sysCtrl2 = 0;
+    uint8_t cellBal = 0;
+};
+
+struct PackSnapshot {
+    uint16_t cell1Mv = 0;
+    uint16_t cell2Mv = 0;
+    uint16_t cell5Mv = 0;
+    uint16_t packMv = 0;
+    int16_t currentMa = 0;
+    int16_t dieTempCentiC = 0;
+    uint8_t balanceMask = 0;
+    uint8_t sysStat = 0;
+    uint8_t sysCtrl1 = 0;
+    uint8_t sysCtrl2 = 0;
+    PackState state = PackState::Starting;
+    uint16_t faultFlags = FAULT_NONE;
+    bool trusted = false;
+    bool lowCellWarning = false;
+    bool stale = true;
+    unsigned long updatedAtMs = 0;
+};
+
+#pragma pack(push, 1)
+struct TelemetryPayload {
+    uint8_t protocolVersion;
+    uint8_t state;
+    uint16_t flags;
+    uint16_t faults;
+    uint8_t balanceMask;
+    uint16_t cell1Mv;
+    uint16_t cell2Mv;
+    uint16_t cell5Mv;
+    uint16_t packMv;
+    int16_t currentMa;
+    int16_t dieTempCentiC;
+    uint8_t socPercent;
+    uint32_t uptimeSec;
+};
+
+struct CommandPayload {
+    uint8_t command;
+    uint8_t confirmation;
+};
+#pragma pack(pop)
 
 #endif
