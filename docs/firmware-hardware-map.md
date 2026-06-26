@@ -137,6 +137,11 @@ No hardware-code mismatch was found in the essential firmware-facing
 connections. The things to improve are mostly software robustness, clarity, and
 power management rather than correcting the basic hardware model.
 
+Live bring-up on 2026-06-26 confirmed this: after reseating the cells, the BQ
+reported a stable idle baseline of about 11.33 V pack voltage with cell readings
+`VC1=3787 mV`, `VC2=3775 mV`, and `VC5=3770 mV`; both `DSG` and `CHG` were on,
+and current was near zero.
+
 Minor code issues to clean up later, without changing hardware assumptions:
 
 - `readRegisters()` and `writeRegister()` accept an I2C address parameter but

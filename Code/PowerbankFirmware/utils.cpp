@@ -12,7 +12,7 @@ const uint8_t crc8_ccitt_small_table[16] = {
 };
 
 // numberBytes are the expected data bytes; the amount must not include the CRC bytes
-void readRegisters(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data, uint8_t numberBytes) {
+bool readRegisters(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data, uint8_t numberBytes) {
 	uint8_t buffer[2*numberBytes+1] = { // Multiply by 2 to account for the CRC data bytes
 		(i2cAddress << 1) | 1, // Slave address and R/W bit
 	};
@@ -20,15 +20,24 @@ void readRegisters(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data, u
 	// Read
 	Wire.beginTransmission(i2cAddress);
 	Wire.write(registerAddress);
-	Wire.endTransmission(true); // false means a repeated start will be sent instead of releasing the bus.
-	Wire.requestFrom(I2C_BQ76920_ADDRESS, 2*numberBytes);
+	uint endTransmissionResponse = Wire.endTransmission(true); // false means a repeated start will be sent instead of releasing the bus.
+	if (endTransmissionResponse != 0) {
+		Log.errorln("Read setup failed for register %X; response code: %d", registerAddress, endTransmissionResponse);
+		return false;
+	}
+	uint8_t requestedBytes = 2*numberBytes;
+	uint8_t receivedBytes = Wire.requestFrom(i2cAddress, requestedBytes);
+	if (receivedBytes != requestedBytes) {
+		Log.errorln("Expected %d bytes from register %X but got %d.", requestedBytes, registerAddress, receivedBytes);
+		return false;
+	}
 
 	for (int i = 0; i < 2*numberBytes; i++) {
 		if (Wire.available()) {
 			buffer[i+1] = Wire.read();
 		} else {
 			Log.errorln("Expected bytes can't be read.");
-			exit(1);
+			return false;
 		}
 	};
 
@@ -36,7 +45,7 @@ void readRegisters(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data, u
 	// First CRC is calculated over slave address and the first data byte.
 	if (crc8_ccitt(0, buffer, 2) != buffer[2]) {
 		Log.errorln("CRC failed. CRCs of slave address and data byte don't match.");
-		exit(1);
+		return false;
 	};
 	data[0] = buffer[1];
 
@@ -44,18 +53,22 @@ void readRegisters(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data, u
 		data[i+1] = buffer[3+i*2];
 		if (crc8_ccitt(0, buffer+3+i*2, 1) != buffer[4+i*2]) {
 			Log.errorln("CRC failed. CRC of data byte %d doesn't match.", i+2);
-			exit(1);
+			return false;
 		};
 	};
+	return true;
 }
 
-uint8_t readRegister(uint8_t i2cAddress, uint8_t registerAddress) {
-	uint8_t data[1];
-	readRegisters(i2cAddress, registerAddress, data, 1);
-	return data[0];
+bool readRegister(uint8_t i2cAddress, uint8_t registerAddress, uint8_t* data) {
+	uint8_t reading[1];
+	if (!readRegisters(i2cAddress, registerAddress, reading, 1)) {
+		return false;
+	}
+	*data = reading[0];
+	return true;
 }
 
-void writeRegister(uint8_t i2cAddress, uint8_t registerAddress, uint8_t data) {
+bool writeRegister(uint8_t i2cAddress, uint8_t registerAddress, uint8_t data) {
 	// Blocks to send are: 1) Start 2) Slave address 3) Register address 4) Data 5) CRC 6) Stop
 	Wire.beginTransmission(i2cAddress); // 1) and 2) step
 	Wire.write(registerAddress); // 3) step
@@ -69,10 +82,11 @@ void writeRegister(uint8_t i2cAddress, uint8_t registerAddress, uint8_t data) {
 	uint response = Wire.endTransmission();
 	if (response != 0) {
 	  Log.errorln("Write failed; response code: %d", response);
-	  exit(1);
+	  return false;
 	} else {
 	  Log.noticeln("Write: register %X; data: %X; CRC: %X successful.", registerAddress, data, crc);
 	};
+	return true;
 }
 
 // Copied from the Zephyr project and slightly modified. (https://github.com/zephyrproject-rtos/zephyr/blob/7291450151ef585c7b612f16752dad4ff7df9bf1/lib/crc/crc8_sw.c)

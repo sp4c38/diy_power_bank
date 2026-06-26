@@ -1,3 +1,6 @@
+#ifndef BATTERY_PACK_H
+#define BATTERY_PACK_H
+
 #include <map>
 
 #include "register.h"
@@ -44,16 +47,18 @@ class BatteryPack {
 		uint adcGain;
 		int8_t adcOffset;
 		
-		void readOffsetAndGain();
-		void updateTemperature();
-		void updateSysStatus();
-		void updateSysControl(); 
-		void updateVoltages(); 
-		void updateCurrent();
+		bool readOffsetAndGain();
+		bool updateTemperature();
+		bool updateSysStatus();
+		bool updateSysControl();
+		bool updateVoltages();
+		bool updateCurrent();
 	
-		void transitionToSHIPMode();
-        void pushBalancing();
+		bool transitionToSHIPMode();
+        bool pushBalancing();
         bool checkIfCellsAreAdjacent(const BalanceOpt a, const BalanceOpt b);
-        void pushProtection();
-        void pushControl();
+        bool pushProtection();
+        bool pushControl();
 };
+
+#endif
