@@ -29,7 +29,7 @@ void setup() {
     Log.begin(LOG_LEVEL_VERBOSE, &Serial);
 
     // bleApp.setup();
-    Wire.begin(); // Must be executed inside the main.ino file, not any other included file etc.. Otherwise the Arduino will crash due to some reason.
+    Wire.begin(); // Must be executed inside the sketch .ino file. Moving this into another included file made the Arduino crash.
 	Wire.setClock(100000);
 
     Log.noticeln("\n************* The Last Minute Life Saver Power Bank *************");

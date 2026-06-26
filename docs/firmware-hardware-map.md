@@ -9,7 +9,7 @@ for the power-bank firmware rewrite/audit.
 - Main schematic: `Circuit/KiCAD Circuit/Powerbank.kicad_sch`
 - KiCad netlist export: `Circuit/KiCAD Circuit/Powerbank.xml`
 - BOM export: `Circuit/KiCAD Circuit/Bill of Materials.csv`
-- Existing firmware: `Code/BatteryPack/main`
+- Existing firmware: `Code/PowerbankFirmware`
 
 Important caveat: `Powerbank.xml` was exported on 2024-01-12, while the KiCad
 project and BOM appear to have changed later. Use this map as a firmware guide,
@@ -98,7 +98,7 @@ direct Arduino GPIO control of the power path.
 
 ## Existing Firmware Constants To Recheck
 
-Current values in `Code/BatteryPack/main/register.h`:
+Current values in `Code/PowerbankFirmware/register.h`:
 
 | Constant | Current value | Meaning |
 | --- | ---: | --- |
