@@ -9,13 +9,21 @@ struct DiagnosticsView: View {
                 VStack(spacing: 16) {
                     if let t = ble.telemetry {
                         statusCard(t)
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         faultsCard(t)
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         flagsCard(t)
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
                     }
                     commandResultCard
                     eventLogCard
                 }
                 .padding()
+                .animation(Theme.motion, value: ble.telemetry?.state)
+                .animation(Theme.motion, value: ble.telemetry?.faults)
+                .animation(Theme.motion, value: ble.telemetry?.flags)
+                .animation(Theme.motion, value: ble.commandResult)
+                .animation(Theme.motion, value: ble.events.count)
             }
             .navigationTitle("Diagnostics")
             .background(Color(.systemGroupedBackground).ignoresSafeArea())
@@ -49,6 +57,7 @@ struct DiagnosticsView: View {
                 Label("No active faults", systemImage: "checkmark.circle.fill")
                     .font(.subheadline)
                     .foregroundStyle(.green)
+                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
             } else {
                 VStack(spacing: 12) {
                     ForEach(t.decodedFaults) { fault in
@@ -62,6 +71,7 @@ struct DiagnosticsView: View {
                             }
                             Spacer()
                         }
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
                 Text("Raw: \(t.faults.hexString)")
@@ -79,11 +89,13 @@ struct DiagnosticsView: View {
                         Image(systemName: flag.isOn ? "checkmark.circle.fill" : "circle")
                             .foregroundStyle(flag.isOn ? .green : .secondary)
                             .font(.caption)
+                            .contentTransition(.symbolEffect(.replace))
                         Text(flag.title)
                             .font(.caption)
                             .foregroundStyle(flag.isOn ? .primary : .secondary)
                         Spacer(minLength: 0)
                     }
+                    .animation(Theme.motion, value: flag.isOn)
                 }
             }
             Text("Raw: \(t.flags.hexString)")
@@ -96,10 +108,14 @@ struct DiagnosticsView: View {
         SectionCard(title: "Last Command Result", systemImage: "terminal") {
             HStack(spacing: 10) {
                 if let cmd = ble.lastCommand {
-                    Image(systemName: cmd.systemImage).foregroundStyle(.secondary)
+                    Image(systemName: cmd.systemImage)
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.symbolEffect(.replace))
+                        .transition(.scale.combined(with: .opacity))
                 }
                 Text(ble.commandResult)
                     .font(.subheadline.monospaced())
+                    .contentTransition(.opacity)
                 Spacer()
             }
         }
@@ -111,6 +127,7 @@ struct DiagnosticsView: View {
                 Text("No events yet")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .transition(.opacity)
             } else {
                 VStack(spacing: 0) {
                     ForEach(ble.events.prefix(40)) { item in
@@ -128,6 +145,7 @@ struct DiagnosticsView: View {
                                 .foregroundStyle(.tertiary)
                         }
                         .padding(.vertical, 5)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                         if item.id != ble.events.prefix(40).last?.id {
                             Divider()
                         }
@@ -149,9 +167,13 @@ struct DiagnosticsView: View {
         HStack {
             Text(title).font(.subheadline).foregroundStyle(.secondary)
             Spacer()
-            Text(value).font(.subheadline.monospacedDigit().weight(.medium)).foregroundStyle(color)
+            Text(value)
+                .font(.subheadline.monospacedDigit().weight(.medium))
+                .foregroundStyle(color)
+                .contentTransition(.numericText())
         }
         .padding(.vertical, 8)
+        .animation(Theme.motion, value: value)
     }
 
     private var signalText: String {

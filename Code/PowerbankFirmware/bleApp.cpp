@@ -60,17 +60,17 @@ void BLEApp::poll(CommandHandler handler) {
     }
 }
 
-void BLEApp::update(const PackSnapshot& snapshot, uint8_t socPercent, bool balancing, bool bleConnectedFlag) {
+void BLEApp::update(const PackSnapshot& snapshot, uint8_t socPercent, uint16_t chargeMahTenths, bool balancing, bool bleConnectedFlag) {
     unsigned long interval = connected() ? 1000UL : 5000UL;
     if (millis() - lastNotifyMs < interval && lastNotifyMs != 0) {
         return;
     }
     lastNotifyMs = millis();
-    TelemetryPayload payload = buildPayload(snapshot, socPercent, balancing, bleConnectedFlag);
+    TelemetryPayload payload = buildPayload(snapshot, socPercent, chargeMahTenths, balancing, bleConnectedFlag);
     telemetryCharacteristic.writeValue((uint8_t*) &payload, sizeof(payload));
 }
 
-TelemetryPayload BLEApp::buildPayload(const PackSnapshot& snapshot, uint8_t socPercent, bool balancing, bool bleConnectedFlag) {
+TelemetryPayload BLEApp::buildPayload(const PackSnapshot& snapshot, uint8_t socPercent, uint16_t chargeMahTenths, bool balancing, bool bleConnectedFlag) {
     TelemetryPayload payload;
     payload.protocolVersion = BLE_PROTOCOL_VERSION;
     payload.state = (uint8_t) snapshot.state;
@@ -106,6 +106,7 @@ TelemetryPayload BLEApp::buildPayload(const PackSnapshot& snapshot, uint8_t socP
     payload.dieTempCentiC = snapshot.dieTempCentiC;
     payload.socPercent = socPercent;
     payload.uptimeSec = millis() / 1000UL;
+    payload.chargeMahTenths = chargeMahTenths;
     return payload;
 }
 

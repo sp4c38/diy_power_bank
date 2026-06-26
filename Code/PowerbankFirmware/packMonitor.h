@@ -14,6 +14,7 @@ public:
     const PackSnapshot& snapshot() const;
     const BqRawReadings& raw() const;
     uint8_t socPercent() const;
+    uint16_t chargeMahTenths() const;
     uint16_t minCellMv() const;
     uint16_t maxCellMv() const;
     uint16_t cellDeltaMv() const;
@@ -23,8 +24,12 @@ private:
     PackSnapshot buildFilteredSnapshot(const PackSnapshot& sample);
     uint16_t deriveFaults(const PackSnapshot& sample, bool trusted) const;
     bool evaluateTrust(const PackSnapshot& sample);
+    void updateStateOfCharge(const PackSnapshot& sample);
 
     PackSnapshot current;
+    float chargeMah = 0.0f;
+    bool socInitialized = false;
+    unsigned long lastCoulombMs = 0;
     PackSnapshot previousSample;
     BqRawReadings lastRaw;
     bool hasPreviousSample = false;

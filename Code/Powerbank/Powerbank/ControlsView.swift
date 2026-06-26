@@ -11,20 +11,13 @@ struct ControlsView: View {
                 VStack(spacing: 16) {
                     if !ble.canSendCommands {
                         notConnectedBanner
-                    }
-
-                    SectionCard(title: "Output", systemImage: "powerplug") {
-                        commandRow(.outputOn, tint: .green)
-                        Divider()
-                        commandRow(.outputOff, tint: .red)
+                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
                     SectionCard(title: "Maintenance", systemImage: "wrench.and.screwdriver") {
                         commandRow(.clearFaults, tint: .blue)
                         Divider()
                         commandRow(.balanceOff, tint: .blue)
-                        Divider()
-                        commandRow(.rawDiagnostics, tint: .secondary)
                     }
 
                     SectionCard(title: "Power", systemImage: "moon.zzz") {
@@ -34,6 +27,8 @@ struct ControlsView: View {
                     developerSection
                 }
                 .padding()
+                .animation(Theme.motion, value: ble.canSendCommands)
+                .animation(Theme.motion, value: developerMode)
             }
             .navigationTitle("Controls")
             .background(Color(.systemGroupedBackground).ignoresSafeArea())
@@ -61,7 +56,7 @@ struct ControlsView: View {
             Toggle(isOn: $developerMode.animation()) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Developer overrides").font(.subheadline.weight(.medium))
-                    Text("Directly toggle the charge and discharge FETs. Use with care.")
+                    Text("Directly toggle the charge FET. Use with care.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -69,13 +64,13 @@ struct ControlsView: View {
 
             if developerMode {
                 Divider()
+                    .transition(.opacity)
                 commandRow(.chargeOn, tint: .green)
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 Divider()
+                    .transition(.opacity)
                 commandRow(.chargeOff, tint: .orange)
-                Divider()
-                commandRow(.dischargeOn, tint: .green)
-                Divider()
-                commandRow(.dischargeOff, tint: .orange)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
     }
@@ -121,6 +116,7 @@ struct ControlsView: View {
         .buttonStyle(.plain)
         .disabled(!ble.canSendCommands)
         .opacity(ble.canSendCommands ? 1 : 0.5)
+        .animation(Theme.motion, value: ble.canSendCommands)
     }
 
     private func trigger(_ command: PowerbankCommand) {

@@ -68,7 +68,7 @@ void loop() {
     refreshAndApply();
 
     if (bleOnline) {
-        bleApp.update(monitor.snapshot(), monitor.socPercent(), balancer.active(), bleApp.connected());
+        bleApp.update(monitor.snapshot(), monitor.socPercent(), monitor.chargeMahTenths(), balancer.active(), bleApp.connected());
     }
 
     logPeriodicStatus();

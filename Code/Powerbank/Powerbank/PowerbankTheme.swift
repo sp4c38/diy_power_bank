@@ -4,6 +4,7 @@ import SwiftUI
 enum Theme {
     static let cardCornerRadius: CGFloat = 20
     static let cardBackground = AnyShapeStyle(.thinMaterial)
+    static let motion = Animation.snappy(duration: 0.35)
 
     /// Battery state-of-charge colour: red when low, amber mid, green when healthy.
     static func socColor(_ soc: Int) -> Color {
@@ -64,6 +65,13 @@ enum Format {
 
     static func temperature(_ c: Double) -> String {
         String(format: "%.1f °C", c)
+    }
+
+    static func duration(_ hours: Double) -> String {
+        let totalMinutes = max(0, Int((hours * 60).rounded()))
+        let h = totalMinutes / 60
+        let m = totalMinutes % 60
+        return h > 0 ? "\(h)h \(m)m" : "\(m)m"
     }
 
     static func uptime(_ seconds: UInt32) -> String {

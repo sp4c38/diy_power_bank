@@ -26,186 +26,134 @@ struct SectionCard<Content: View>: View {
     }
 }
 
-/// The hero element on the dashboard: a circular state-of-charge gauge with a
-/// gradient track. When charging it erupts into a full energy-flow animation.
-struct BatteryRingView: View {
+/// Compact state-of-charge surface for the dashboard.
+struct BatteryStatusView: View {
     let soc: Int
     let state: PackState
     let flow: PowerFlow
+    let currentMa: Int16
 
     private var tint: Color { Theme.socColor(soc) }
-    private let lineWidth: CGFloat = 16
-    private let size: CGFloat = 220
-
     private var isCharging: Bool { flow == .charging }
 
     var body: some View {
-        ZStack {
-            // Track
-            Circle()
-                .stroke(tint.opacity(0.15), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                ChargePercentText(soc: soc, tint: tint, isCharging: isCharging)
 
-            // The cinematic charging layer sits between the track and the
-            // state-of-charge arc so the actual level stays readable on top.
-            if isCharging {
-                ChargingRingEffect(ringWidth: lineWidth)
-            }
+                Spacer(minLength: 8)
 
-            // State-of-charge arc
-            Circle()
-                .trim(from: 0, to: max(0.001, Double(soc) / 100))
-                .stroke(
-                    AngularGradient(
-                        colors: [tint.opacity(0.7), tint],
-                        center: .center,
-                        startAngle: .degrees(-90),
-                        endAngle: .degrees(270)
-                    ),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-                .shadow(color: isCharging ? tint.opacity(0.8) : .clear, radius: 6)
-                .animation(.easeInOut(duration: 0.6), value: soc)
-
-            centerLabel
-        }
-        .frame(width: size, height: size)
-        .padding(.vertical, 4)
-    }
-
-    private var centerLabel: some View {
-        VStack(spacing: 2) {
-            ZStack {
-                if isCharging {
-                    // Soft bloom behind the bolt.
-                    Circle()
-                        .fill(tint.opacity(0.35))
-                        .frame(width: 30, height: 30)
-                        .blur(radius: 10)
-                }
                 Image(systemName: state.systemImage)
-                    .font(.title2)
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(Theme.stateColor(state))
-                    .symbolEffect(.pulse, options: .repeating, isActive: isCharging)
+                    .frame(width: 36, height: 36)
+                    .background(Theme.stateColor(state).opacity(0.14), in: Circle())
+                    .contentTransition(.symbolEffect(.replace))
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 1) {
-                Text("\(soc)")
-                    .font(.system(size: 64, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
-                Text("%")
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .animation(.snappy, value: soc)
+            BatteryLevelBar(soc: soc, tint: tint, isCharging: isCharging)
 
-            Text(state.title)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
+            HStack(alignment: .firstTextBaseline) {
+                Text(state.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.stateColor(state))
+
+                Spacer(minLength: 8)
+
+                Text(Format.current(currentMa))
+                    .font(.subheadline.monospacedDigit().weight(.semibold))
+                    .foregroundStyle(Theme.flowColor(flow))
+            }
         }
+        .padding(18)
+        .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+        .animation(Theme.motion, value: soc)
+        .animation(Theme.motion, value: state)
+        .animation(Theme.motion, value: flow)
+        .animation(Theme.motion, value: currentMa)
     }
 }
 
-/// An over-the-top charging visualisation drawn entirely in a `Canvas` and
-/// driven by a continuous `TimelineView` clock. Layers, from back to front:
-///   1. A breathing glow halo around the ring.
-///   2. Energy particles ("electrons") rising up through the core.
-///   3. Two counter-rotating comets racing around the ring with glowing trails.
-struct ChargingRingEffect: View {
-    var ringWidth: CGFloat
-    var tint: Color = .green
+private struct ChargePercentText: View {
+    let soc: Int
+    let tint: Color
+    let isCharging: Bool
 
     var body: some View {
-        TimelineView(.animation) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            Canvas { context, size in
-                let center = CGPoint(x: size.width / 2, y: size.height / 2)
-                let radius = (min(size.width, size.height) - ringWidth) / 2
+        if isCharging {
+            TimelineView(.animation) { timeline in
+                let phase = timeline.date.timeIntervalSinceReferenceDate
+                let pulse = 0.5 + 0.5 * sin(phase * 4.0)
+                percentText
+                    .scaleEffect(1.0 + pulse * 0.10)
+                    .shadow(color: tint.opacity(0.22 + pulse * 0.28), radius: 8 + pulse * 8)
+            }
+        } else {
+            percentText
+        }
+    }
 
-                drawGlowHalo(context, center: center, radius: radius, t: t)
-                drawRisingParticles(context, center: center, radius: radius, t: t)
-                // Two main comets racing in opposite directions, plus a fast
-                // bright spark that laps them.
-                drawComet(context, center: center, radius: radius,
-                          angle: t * 2.4, trailDirection: -1,
-                          head: .white, trail: .green, headScale: 1.1)
-                drawComet(context, center: center, radius: radius,
-                          angle: -t * 1.6 + .pi, trailDirection: 1,
-                          head: .mint, trail: .mint, headScale: 1.0)
-                drawComet(context, center: center, radius: radius,
-                          angle: t * 4.1 + 1.2, trailDirection: -1,
-                          head: .white, trail: .cyan, headScale: 0.6)
+    private var percentText: some View {
+        Text("\(soc)%")
+            .font(.system(size: 48, weight: .bold, design: .rounded))
+            .monospacedDigit()
+            .foregroundStyle(tint)
+            .contentTransition(.numericText())
+    }
+}
+
+private struct BatteryLevelBar: View {
+    let soc: Int
+    let tint: Color
+    let isCharging: Bool
+
+    private var fillFraction: Double {
+        Double(min(max(soc, 0), 100)) / 100.0
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 7)
+                    .fill(.quaternary)
+
+                RoundedRectangle(cornerRadius: 7)
+                    .fill(tint.gradient)
+                    .frame(width: max(10, geo.size.width * fillFraction))
+                    .overlay(alignment: .leading) {
+                        if isCharging {
+                            TimelineView(.animation) { timeline in
+                                let phase = timeline.date.timeIntervalSinceReferenceDate
+                                let fillWidth = max(10, geo.size.width * fillFraction)
+                                let band: CGFloat = 140
+                                let travel = fillWidth + band
+                                let period = 2.2
+                                let x = (phase.truncatingRemainder(dividingBy: period) / period) * travel - band
+                                RoundedRectangle(cornerRadius: 7)
+                                    .fill(
+                                        LinearGradient(
+                                            stops: [
+                                                .init(color: .clear, location: 0.0),
+                                                .init(color: .white.opacity(0.12), location: 0.3),
+                                                .init(color: .white.opacity(0.5), location: 0.5),
+                                                .init(color: .white.opacity(0.12), location: 0.7),
+                                                .init(color: .clear, location: 1.0),
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .frame(width: band)
+                                    .offset(x: x)
+                            }
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
             }
         }
-        .allowsHitTesting(false)
-    }
-
-    // MARK: - Layers
-
-    private func drawGlowHalo(_ context: GraphicsContext, center: CGPoint, radius: CGFloat, t: TimeInterval) {
-        let pulse = 0.5 + 0.5 * sin(t * 2.2)
-        var glow = context
-        glow.addFilter(.blur(radius: 12))
-        let rect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
-        glow.stroke(
-            Path(ellipseIn: rect),
-            with: .color(tint.opacity(0.18 + 0.22 * pulse)),
-            lineWidth: ringWidth * (1.1 + 0.6 * pulse)
-        )
-    }
-
-    private func drawRisingParticles(_ context: GraphicsContext, center: CGPoint, radius: CGFloat, t: TimeInterval) {
-        let count = 22
-        for i in 0..<count {
-            let seed = Double(i) * 0.6180339887
-            let speed = 0.4 + (seed.truncatingRemainder(dividingBy: 0.4))
-            let progress = (t * speed + seed).truncatingRemainder(dividingBy: 1.0)
-
-            // Drift sideways on a sine path while rising from bottom to top.
-            let sway = sin((progress + seed) * .pi * 2) * 0.55
-            let x = center.x + sway * radius * 0.72
-            let y = center.y + radius * 0.85 - progress * radius * 1.7
-
-            let fade = sin(progress * .pi) // 0 at the ends, 1 in the middle
-            let r = 1.5 + 3.2 * fade
-
-            // Soft glow + a brighter hot core gives each spark a comet-like streak.
-            var glow = context
-            glow.addFilter(.blur(radius: 2.5))
-            glow.fill(
-                Path(ellipseIn: CGRect(x: x - r * 1.6, y: y - r * 1.6, width: r * 3.2, height: r * 3.2)),
-                with: .color(.green.opacity(0.5 * fade))
-            )
-            var core = context
-            core.addFilter(.blur(radius: 1))
-            core.fill(
-                Path(ellipseIn: CGRect(x: x - r * 0.6, y: y - r * 0.6, width: r * 1.2, height: r * 1.2)),
-                with: .color(.mint.opacity(0.95 * fade))
-            )
-        }
-    }
-
-    private func drawComet(_ context: GraphicsContext, center: CGPoint, radius: CGFloat,
-                           angle: Double, trailDirection: Double, head: Color, trail: Color,
-                           headScale: CGFloat) {
-        let trailCount = 26
-        for j in stride(from: trailCount - 1, through: 0, by: -1) {
-            let a = angle + trailDirection * Double(j) * 0.05
-            let px = center.x + cos(a) * radius
-            let py = center.y + sin(a) * radius
-            let frac = 1.0 - Double(j) / Double(trailCount)
-            let taper = pow(frac, 1.3)
-            let r = (ringWidth / 2) * (0.2 + 1.0 * taper) * (j == 0 ? headScale : 1)
-
-            var dot = context
-            dot.addFilter(.blur(radius: j == 0 ? 2.5 : 4.5))
-            let color = (j == 0 ? head : trail).opacity(taper)
-            dot.fill(
-                Path(ellipseIn: CGRect(x: px - r, y: py - r, width: r * 2, height: r * 2)),
-                with: .color(color)
-            )
-        }
+        .frame(height: 14)
+        .animation(Theme.motion, value: soc)
+        .animation(Theme.motion, value: isCharging)
     }
 }
 
@@ -228,6 +176,7 @@ struct MetricTile: View {
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+                .contentTransition(.numericText())
 
             Text(title)
                 .font(.caption)
@@ -236,6 +185,8 @@ struct MetricTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 16))
+        .animation(Theme.motion, value: value)
+        .animation(Theme.motion, value: systemImage)
     }
 }
 
@@ -253,14 +204,15 @@ struct StatusPill: View {
             .padding(.vertical, 6)
             .background(tint.opacity(0.15), in: Capsule())
             .foregroundStyle(tint)
+            .contentTransition(.symbolEffect(.replace))
+            .animation(Theme.motion, value: text)
+            .animation(Theme.motion, value: systemImage)
     }
 }
 
 /// A simple horizontal bar showing a cell's voltage within its operating window.
 struct CellBar: View {
     let mv: UInt16
-    var isLowest: Bool = false
-    var isHighest: Bool = false
 
     // Operating window for a Li-ion cell on this pack.
     private let minMv: Double = 3000
@@ -282,6 +234,7 @@ struct CellBar: View {
             }
         }
         .frame(height: 10)
+        .animation(Theme.motion, value: mv)
     }
 }
 
@@ -290,13 +243,49 @@ struct ConnectionBar: View {
     @EnvironmentObject private var ble: PowerbankBLEManager
 
     var body: some View {
+        Group {
+            if ble.connectionState.isConnected {
+                connectedBar
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            } else {
+                disconnectedBar
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(Theme.motion, value: ble.connectionState)
+    }
+
+    private var connectedBar: some View {
+        HStack(spacing: 6) {
+            Spacer(minLength: 0)
+
+            Circle()
+                .fill(Color.green)
+                .frame(width: 6, height: 6)
+                .transition(.scale.combined(with: .opacity))
+
+            SignalBars(strength: ble.signalStrength)
+
+            Button(action: ble.toggleConnection) {
+                Image(systemName: "xmark")
+                    .font(.caption2.weight(.bold))
+                    .frame(width: 18, height: 18)
+            }
+            .buttonStyle(.plain)
+            .tint(.secondary)
+            .accessibilityLabel("Disconnect")
+        }
+        .padding(.horizontal, 4)
+    }
+
+    private var disconnectedBar: some View {
         HStack(spacing: 14) {
             statusIcon
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(ble.connectionState.title)
                     .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
+                    .lineLimit(2)
                 Text(ble.deviceInfo)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -304,10 +293,6 @@ struct ConnectionBar: View {
             }
 
             Spacer(minLength: 8)
-
-            if ble.connectionState.isConnected {
-                SignalBars(strength: ble.signalStrength)
-            }
 
             Button(action: ble.toggleConnection) {
                 Text(connectionButtonTitle)
@@ -335,12 +320,16 @@ struct ConnectionBar: View {
                 .frame(width: 40, height: 40)
             if ble.connectionState.isBusy {
                 ProgressView()
+                    .transition(.scale.combined(with: .opacity))
             } else {
                 Image(systemName: ble.connectionState.isConnected ? "bolt.horizontal.circle.fill" : "antenna.radiowaves.left.and.right.slash")
                     .font(.title3)
                     .foregroundStyle(statusColor)
+                    .contentTransition(.symbolEffect(.replace))
+                    .transition(.scale.combined(with: .opacity))
             }
         }
+        .animation(Theme.motion, value: ble.connectionState)
     }
 
     private var statusColor: Color {
@@ -366,5 +355,6 @@ struct SignalBars: View {
             }
         }
         .accessibilityLabel("Signal strength")
+        .animation(Theme.motion, value: strength.bars)
     }
 }

@@ -11,13 +11,13 @@ class BLEApp {
 public:
     BLEApp();
     bool begin();
-    void update(const PackSnapshot& snapshot, uint8_t socPercent, bool balancing, bool bleConnectedFlag);
+    void update(const PackSnapshot& snapshot, uint8_t socPercent, uint16_t chargeMahTenths, bool balancing, bool bleConnectedFlag);
     void poll(CommandHandler handler);
     bool connected() const;
     void setCommandResult(const char* message);
 
 private:
-    TelemetryPayload buildPayload(const PackSnapshot& snapshot, uint8_t socPercent, bool balancing, bool bleConnectedFlag);
+    TelemetryPayload buildPayload(const PackSnapshot& snapshot, uint8_t socPercent, uint16_t chargeMahTenths, bool balancing, bool bleConnectedFlag);
 
     BLEService service;
     BLECharacteristic telemetryCharacteristic;

@@ -149,6 +149,48 @@ struct Telemetry: Equatable {
     var maxCellMv: UInt16 { [cell1Mv, cell2Mv, cell5Mv].max() ?? 0 }
     var cellDeltaMv: UInt16 { maxCellMv - minCellMv }
 
+    // MARK: - State-of-charge context
+    // Constants mirror the firmware coulomb counter (register.h): the usable
+    // window is bounded by the empty (min cell) and full (max cell) anchors.
+    static let usableCapacityMah: Double = 3200   // NCR18650B, 4.15 V / 3.10 V window
+    static let emptyAnchorMv: UInt16 = 3100       // outputOffMv  → 0 %
+    static let fullAnchorMv: UInt16 = 4150        // chargeStopMv → 100 %
+
+    /// Approximate charge / energy left, from the reported (coulomb-counted) SoC.
+    var chargeRemainingMah: Double { Double(socPercent) / 100.0 * Telemetry.usableCapacityMah }
+    var energyRemainingWh: Double { chargeRemainingMah / 1000.0 * packVoltage }
+
+    /// Estimated runtime at the present current: time to full while charging,
+    /// time to empty while discharging. `nil` when idle (no meaningful rate).
+    var runtimeHours: Double? {
+        let amps = abs(Double(currentMa)) / 1000.0
+        guard amps > 0.02 else { return nil }
+        switch flow {
+        case .charging: return (Telemetry.usableCapacityMah - chargeRemainingMah) / 1000.0 / amps
+        case .discharging: return chargeRemainingMah / 1000.0 / amps
+        case .idle: return nil
+        }
+    }
+
+    /// What the resting open-circuit voltage alone would estimate (the firmware's
+    /// OCV seed table, on the min cell). Useful as a sanity check against the
+    /// coulomb gauge: the two agree at rest and diverge under load.
+    var voltageEstimatePercent: Int {
+        let table: [(mv: Double, pct: Double)] = [
+            (3100, 0), (3200, 4), (3300, 8), (3400, 13), (3500, 20), (3600, 30),
+            (3700, 42), (3800, 55), (3900, 68), (4000, 80), (4100, 92), (4150, 100)
+        ]
+        let mv = Double(minCellMv)
+        if mv <= table[0].mv { return 0 }
+        if mv >= table[table.count - 1].mv { return 100 }
+        for i in 1..<table.count where mv < table[i].mv {
+            let a = table[i - 1], b = table[i]
+            let frac = (mv - a.mv) / (b.mv - a.mv)
+            return Int((a.pct + frac * (b.pct - a.pct)).rounded())
+        }
+        return 100
+    }
+
     /// Which cells the balancer is currently bleeding (matches firmware BalanceMask).
     func isBalancing(cellID: Int) -> Bool {
         switch cellID {

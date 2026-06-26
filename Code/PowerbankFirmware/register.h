@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 const char FIRMWARE_VERSION[] = "0.2.0";
-const uint8_t BLE_PROTOCOL_VERSION = 1;
+const uint8_t BLE_PROTOCOL_VERSION = 2;
 
 const uint8_t I2C_BQ76920_ADDRESS = 0x08;
 const uint8_t ALERT_PIN = 10;
@@ -71,6 +71,13 @@ namespace thresholds {
     const uint16_t criticalShipMv = 2850;
     const uint16_t hardwareOvMv = 4230;
     const uint16_t hardwareUvMv = 2550;
+
+    // Coulomb-counting state of charge. The usable capacity is the charge that
+    // flows between the 0 % anchor (min cell at outputOffMv) and the 100 % anchor
+    // (charge terminated at chargeStopMv). It is less than the NCR18650B's 3350 mAh
+    // typical rating because the 4.15 V / 3.10 V window trims both ends of the cell
+    // curve. 3S1P pack, so series count does not multiply capacity. Tunable.
+    const uint16_t usableCapacityMah = 3200;
 
     const uint16_t balanceMinCellMv = 4000;
     const uint16_t balanceStartDeltaMv = 35;
@@ -199,6 +206,7 @@ struct TelemetryPayload {
     int16_t dieTempCentiC;
     uint8_t socPercent;
     uint32_t uptimeSec;
+    uint16_t chargeMahTenths; // coulomb-counted charge in 0.1 mAh units (protocol v2)
 };
 
 struct CommandPayload {

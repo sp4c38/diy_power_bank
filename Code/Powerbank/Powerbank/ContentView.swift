@@ -25,12 +25,18 @@ struct DashboardView: View {
                     ConnectionBar()
 
                     if let telemetry = ble.telemetry {
-                        BatteryRingView(soc: Int(telemetry.socPercent), state: telemetry.state, flow: telemetry.flow)
+                        BatteryStatusView(
+                            soc: Int(telemetry.socPercent),
+                            state: telemetry.state,
+                            flow: telemetry.flow,
+                            currentMa: telemetry.currentMa
+                        )
 
-                        FlowCard(telemetry: telemetry)
+                        CellOverviewCard(telemetry: telemetry)
 
                         if ble.isTelemetryStale || !telemetry.trusted || telemetry.hasFaults || telemetry.lowCellWarning {
                             WarningStrip(telemetry: telemetry, isStale: ble.isTelemetryStale)
+                                .transition(.move(edge: .top).combined(with: .opacity))
                         }
 
                         metrics(telemetry)
@@ -38,9 +44,14 @@ struct DashboardView: View {
                         outputControls(telemetry)
                     } else {
                         EmptyTelemetryView()
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
                     }
                 }
                 .padding()
+                .animation(Theme.motion, value: ble.telemetry != nil)
+                .animation(Theme.motion, value: ble.telemetry?.state)
+                .animation(Theme.motion, value: ble.telemetry?.flags)
+                .animation(Theme.motion, value: ble.telemetry?.faults)
             }
             .navigationTitle("Powerbank")
             .background(backgroundGradient)
@@ -52,7 +63,7 @@ struct DashboardView: View {
             MetricTile(title: "Pack Voltage", value: Format.volts(t.packVoltage), systemImage: "bolt.fill", accent: .yellow)
             MetricTile(title: "Temperature", value: Format.temperature(t.temperatureC), systemImage: "thermometer.medium", accent: .orange)
             MetricTile(title: "Output", value: t.dischargeEnabled ? "On" : "Off", systemImage: t.dischargeEnabled ? "powerplug.fill" : "powerplug", accent: t.dischargeEnabled ? .green : .secondary)
-            MetricTile(title: "Charging Path", value: t.chargeEnabled ? "On" : "Off", systemImage: t.chargeEnabled ? "bolt.batteryblock.fill" : "bolt.batteryblock", accent: t.chargeEnabled ? .green : .secondary)
+            MetricTile(title: "Power", value: Format.power(t.powerW), systemImage: "gauge.with.dots.needle.67percent", accent: Theme.flowColor(t.flow))
         }
     }
 
@@ -68,6 +79,7 @@ struct DashboardView: View {
             .buttonStyle(.borderedProminent)
             .tint(.green)
             .disabled(!ble.canSendCommands || t.dischargeEnabled)
+            .opacity((!ble.canSendCommands || t.dischargeEnabled) ? 0.55 : 1)
 
             Button {
                 ble.send(.outputOff)
@@ -79,9 +91,12 @@ struct DashboardView: View {
             .buttonStyle(.bordered)
             .tint(.red)
             .disabled(!ble.canSendCommands || !t.dischargeEnabled)
+            .opacity((!ble.canSendCommands || !t.dischargeEnabled) ? 0.55 : 1)
         }
         .controlSize(.large)
         .buttonBorderShape(.roundedRectangle(radius: 14))
+        .animation(Theme.motion, value: ble.canSendCommands)
+        .animation(Theme.motion, value: t.dischargeEnabled)
     }
 
     private var backgroundGradient: some View {
@@ -94,42 +109,67 @@ struct DashboardView: View {
     }
 }
 
-/// Prominent card showing whether the pack is charging or discharging, with power.
-private struct FlowCard: View {
+/// A compact dashboard summary of the three physical cells.
+private struct CellOverviewCard: View {
     let telemetry: Telemetry
 
-    private var color: Color { Theme.flowColor(telemetry.flow) }
-
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: telemetry.flow.systemImage)
-                .font(.title)
-                .foregroundStyle(color)
-                .frame(width: 48, height: 48)
-                .background(color.opacity(0.15), in: Circle())
-                .symbolEffect(.bounce, options: .repeating, isActive: telemetry.flow != .idle)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(telemetry.flow.title)
-                    .font(.headline)
-                Text(Format.current(telemetry.currentMa))
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(Format.power(telemetry.powerW))
-                    .font(.title2.weight(.bold).monospacedDigit())
-                    .foregroundStyle(color)
-                Text("Power")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        SectionCard(title: nil, systemImage: nil) {
+            HStack(spacing: 10) {
+                ForEach(Array(telemetry.cells.enumerated()), id: \.element.id) { index, cell in
+                    cellTile(cell, physicalIndex: index + 1)
+                }
             }
         }
-        .padding(18)
-        .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+    }
+
+    private func cellTile(_ cell: Telemetry.Cell, physicalIndex: Int) -> some View {
+        let tint = Theme.cellColor(cell.mv)
+
+        return VStack(alignment: .leading, spacing: 7) {
+            Text("Cell \(physicalIndex)")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+
+            CellChargeBar(mv: cell.mv, tint: tint)
+
+            Text(Format.volts(cell.mv))
+                .font(.subheadline.monospacedDigit().weight(.semibold))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .contentTransition(.numericText())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .animation(Theme.motion, value: cell.mv)
+    }
+}
+
+private struct CellChargeBar: View {
+    let mv: UInt16
+    let tint: Color
+
+    private var fillFraction: Double {
+        let minMv = 3100.0
+        let maxMv = 4150.0
+        let clamped = min(max(Double(mv), minMv), maxMv)
+        return (clamped - minMv) / (maxMv - minMv)
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.quaternary)
+                Capsule()
+                    .fill(tint)
+                    .frame(width: max(5, geo.size.width * fillFraction))
+            }
+        }
+        .frame(height: 6)
+        .accessibilityHidden(true)
+        .animation(Theme.motion, value: mv)
     }
 }
 
@@ -141,20 +181,28 @@ private struct WarningStrip: View {
         VStack(alignment: .leading, spacing: 10) {
             if isStale {
                 warning("Telemetry is stale", "Readings haven't updated recently.", "clock.badge.exclamationmark", .orange)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             if !telemetry.trusted {
                 warning("Measurements untrusted", "The firmware can't vouch for these readings.", "exclamationmark.triangle.fill", .orange)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             ForEach(telemetry.decodedFaults) { fault in
                 warning(fault.title, fault.detail, fault.systemImage, .red)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
             if telemetry.lowCellWarning && !telemetry.hasFaults {
                 warning("Low cell warning", "A cell is approaching the cutoff.", "battery.25percent", .orange)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+        .animation(Theme.motion, value: isStale)
+        .animation(Theme.motion, value: telemetry.trusted)
+        .animation(Theme.motion, value: telemetry.faults)
+        .animation(Theme.motion, value: telemetry.lowCellWarning)
     }
 
     private func warning(_ title: String, _ detail: String, _ image: String, _ tint: Color) -> some View {
@@ -169,6 +217,7 @@ private struct WarningStrip: View {
             }
             Spacer()
         }
+        .contentTransition(.opacity)
     }
 }
 
