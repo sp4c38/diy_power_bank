@@ -35,7 +35,7 @@ struct CellsView: View {
             // What the gauge is built from: remaining charge/energy and the
             // current that is being integrated.
             HStack(spacing: 12) {
-                summaryItem("Charge", String(format: "≈ %.0f mAh", t.chargeRemainingMah), .primary)
+                summaryItem("Charge", String(format: "%.1f mAh", t.chargeRemainingMah), .primary)
                 Divider()
                 summaryItem("Energy", String(format: "≈ %.1f Wh", t.energyRemainingWh), .secondary)
                 Divider()

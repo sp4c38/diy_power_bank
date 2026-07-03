@@ -22,9 +22,10 @@ struct DashboardView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    ConnectionBar()
-
                     if let telemetry = ble.telemetry {
+                        ConnectionBar()
+                            .transition(.move(edge: .top).combined(with: .opacity))
+
                         BatteryStatusView(
                             soc: Int(telemetry.socPercent),
                             state: telemetry.state,
@@ -226,23 +227,21 @@ struct EmptyTelemetryView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Image(systemName: ble.connectionState.isBusy ? "antenna.radiowaves.left.and.right" : "bolt.horizontal.circle")
+            Image(systemName: isWaiting ? "antenna.radiowaves.left.and.right" : "bolt.horizontal.circle")
                 .font(.system(size: 56))
                 .foregroundStyle(.secondary)
-                .symbolEffect(.variableColor.iterative, options: .repeating, isActive: ble.connectionState.isBusy)
+                .symbolEffect(.variableColor.iterative, options: .repeating, isActive: isWaiting)
 
             VStack(spacing: 6) {
-                Text(ble.connectionState.isBusy ? "Looking for your Powerbank" : "Not connected")
+                Text(title)
                     .font(.title3.weight(.semibold))
-                Text(ble.connectionState.isBusy
-                     ? "Make sure the Powerbank is powered and nearby."
-                     : "Connect to start seeing live telemetry.")
+                Text(detail)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
-            if !ble.connectionState.isBusy {
+            if !isWaiting {
                 Button {
                     ble.startScanning()
                 } label: {
@@ -257,6 +256,30 @@ struct EmptyTelemetryView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 60)
+    }
+
+    private var isWaiting: Bool {
+        ble.connectionState.isBusy || ble.connectionState.isConnected
+    }
+
+    private var title: String {
+        if ble.connectionState.isConnected {
+            return "Powerbank connected"
+        }
+        if ble.connectionState.isBusy {
+            return "Looking for your Powerbank"
+        }
+        return "Not connected"
+    }
+
+    private var detail: String {
+        if ble.connectionState.isConnected {
+            return "Loading live data…"
+        }
+        if ble.connectionState.isBusy {
+            return "Make sure the Powerbank is powered and nearby."
+        }
+        return "Connect to start seeing live telemetry."
     }
 }
 

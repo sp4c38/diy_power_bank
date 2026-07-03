@@ -101,6 +101,8 @@ struct Telemetry: Equatable {
     let dieTempCentiC: Int16
     let socPercent: UInt8
     let uptimeSec: UInt32
+    /// Coulomb-counted charge in 0.1 mAh units (protocol v2+); nil from older firmware.
+    let chargeMahTenths: UInt16?
     let receivedAt: Date
 
     // MARK: - Flag accessors (mirror firmware TelemetryFlags)
@@ -156,8 +158,12 @@ struct Telemetry: Equatable {
     static let emptyAnchorMv: UInt16 = 3100       // outputOffMv  → 0 %
     static let fullAnchorMv: UInt16 = 4150        // chargeStopMv → 100 %
 
-    /// Approximate charge / energy left, from the reported (coulomb-counted) SoC.
-    var chargeRemainingMah: Double { Double(socPercent) / 100.0 * Telemetry.usableCapacityMah }
+    /// Charge left in mAh. Uses the firmware's full-resolution coulomb count when
+    /// available (protocol v2+), falling back to the coarse SoC% on older firmware.
+    var chargeRemainingMah: Double {
+        if let tenths = chargeMahTenths { return Double(tenths) / 10.0 }
+        return Double(socPercent) / 100.0 * Telemetry.usableCapacityMah
+    }
     var energyRemainingWh: Double { chargeRemainingMah / 1000.0 * packVoltage }
 
     /// Estimated runtime at the present current: time to full while charging,
@@ -240,6 +246,8 @@ struct Telemetry: Equatable {
         let dieTemp = i16()
         let soc = u8()
         let uptime = u32()
+        // Protocol v2 appends the full-resolution charge; older firmware omits it.
+        let chargeTenths: UInt16? = data.count >= 26 ? u16() : nil
 
         return Telemetry(
             protocolVersion: protocolVersion,
@@ -255,6 +263,7 @@ struct Telemetry: Equatable {
             dieTempCentiC: dieTemp,
             socPercent: soc,
             uptimeSec: uptime,
+            chargeMahTenths: chargeTenths,
             receivedAt: Date()
         )
     }
