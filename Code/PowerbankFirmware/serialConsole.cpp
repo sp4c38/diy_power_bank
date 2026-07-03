@@ -79,11 +79,14 @@ CommandId SerialConsole::commandFromString(String command, bool& confirmed) {
     if (command == "raw_diag") {
         return CommandId::RawDiagnostics;
     }
+    if (command == "reset_battery") {
+        return CommandId::ResetLearnedBattery;
+    }
     return CommandId::None;
 }
 
 void SerialConsole::printHelp() {
-    Log.noticeln("Commands: help, status, faults, raw, output_on, output_off, clear_faults, balance_off, ship!, charge_on, charge_off");
+    Log.noticeln("Commands: help, status, faults, raw, output_on, output_off, clear_faults, balance_off, ship!, charge_on, charge_off, reset_battery!");
 }
 
 void SerialConsole::printStatus(const PackSnapshot& snapshot, const ControlState& controls, uint8_t socPercent) {

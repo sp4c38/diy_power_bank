@@ -89,13 +89,35 @@ xcodebuild -project Code/Powerbank/Powerbank.xcodeproj -scheme Powerbank -destin
 Service UUID: `7E571000-40A1-4E31-8E9D-4AC0D8B2A100`
 
 - Telemetry: `7E571001-40A1-4E31-8E9D-4AC0D8B2A100`, read + notify, packed
-  little-endian protocol v1 payload.
+  little-endian protocol v3 payload. Protocol v2 added full-resolution charge;
+  v3 adds the idle-shutdown countdown and new state flags.
 - Command: `7E571002-40A1-4E31-8E9D-4AC0D8B2A100`, write, two bytes:
   command id and optional confirmation byte `0xA5`.
 - Command result: `7E571003-40A1-4E31-8E9D-4AC0D8B2A100`, read + notify,
   UTF-8 status text.
 - Device info: `7E571004-40A1-4E31-8E9D-4AC0D8B2A100`, read, UTF-8 firmware
   and protocol version.
+- History control: `7E571005-40A1-4E31-8E9D-4AC0D8B2A100`, read + write +
+  notify, requests resumable history streaming and reports the retained range.
+- History data: `7E571006-40A1-4E31-8E9D-4AC0D8B2A100`, notify, packed
+  ten-minute samples and state-change snapshots split into ordered 20-byte
+  chunks so transfer does not depend on a larger negotiated BLE MTU.
+- Battery health: `7E571007-40A1-4E31-8E9D-4AC0D8B2A100`, read + notify,
+  learned capacity and lifetime aggregate metrics.
+- Time sync: `7E571008-40A1-4E31-8E9D-4AC0D8B2A100`, write, Unix time from
+  the connected app.
+
+## Persistent Storage
+
+Firmware v0.3 reserves the final 96 KB of internal flash (`0xE8000` through
+`0xFFFFF`) for LittleFS. It stores gauge checkpoints, battery-health aggregates,
+and a circular buffer of roughly 14 days of history. The firmware disables
+storage if its image ever reaches the reserved region; protection and live
+telemetry continue without persistence.
+
+The gauge restores its last coulomb count after a restart, then checks it against
+trusted resting voltage. Small differences are retained, medium differences are
+corrected gradually, and large differences cause a safe voltage-based reseed.
 
 ## Bring-Up Notes
 

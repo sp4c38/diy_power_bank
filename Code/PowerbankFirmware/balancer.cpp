@@ -3,16 +3,23 @@
 #include "balancer.h"
 
 bool Balancer::update(Bq76920Driver& driver, const PackSnapshot& snapshot, bool allowed) {
+    uint16_t minCell = min(snapshot.cell1Mv, min(snapshot.cell2Mv, snapshot.cell5Mv));
+    uint16_t maxCell = max(snapshot.cell1Mv, max(snapshot.cell2Mv, snapshot.cell5Mv));
+    uint16_t delta = maxCell - minCell;
+    if (delta <= thresholds::balanceStopDeltaMv) {
+        timeoutLatched = false;
+    }
+
     if (!allowed) {
         return stop(driver);
     }
 
-    uint16_t minCell = min(snapshot.cell1Mv, min(snapshot.cell2Mv, snapshot.cell5Mv));
-    uint16_t maxCell = max(snapshot.cell1Mv, max(snapshot.cell2Mv, snapshot.cell5Mv));
-    uint16_t delta = maxCell - minCell;
-
     if (activeMask != 0) {
-        if (delta <= thresholds::balanceStopDeltaMv || millis() - startedAtMs >= thresholds::balanceMaxDurationMs) {
+        if (delta <= thresholds::balanceStopDeltaMv) {
+            return stop(driver);
+        }
+        if (millis() - startedAtMs >= thresholds::balanceMaxDurationMs) {
+            timeoutLatched = true;
             return stop(driver);
         }
         return true;
@@ -27,6 +34,7 @@ bool Balancer::update(Bq76920Driver& driver, const PackSnapshot& snapshot, bool 
         return true;
     }
     startedAtMs = millis();
+    timeoutLatched = false;
     Log.noticeln("Starting balancing mask %X.", activeMask);
     return driver.setBalancingMask(activeMask);
 }
@@ -47,6 +55,14 @@ bool Balancer::active() const {
 
 uint8_t Balancer::mask() const {
     return activeMask;
+}
+
+bool Balancer::timedOut() const {
+    return timeoutLatched;
+}
+
+void Balancer::clearTimeout() {
+    timeoutLatched = false;
 }
 
 uint8_t Balancer::chooseCellToBalance(const PackSnapshot& snapshot) const {

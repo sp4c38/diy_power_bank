@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct ContentView: View {
@@ -7,6 +8,8 @@ struct ContentView: View {
                 .tabItem { Label("Dashboard", systemImage: "bolt.fill") }
             CellsView()
                 .tabItem { Label("Cells", systemImage: "battery.100percent") }
+            HistoryView()
+                .tabItem { Label("History", systemImage: "chart.xyaxis.line") }
             DiagnosticsView()
                 .tabItem { Label("Diagnostics", systemImage: "waveform.path.ecg") }
             ControlsView()
@@ -69,35 +72,67 @@ struct DashboardView: View {
     }
 
     private func outputControls(_ t: Telemetry) -> some View {
-        HStack(spacing: 12) {
-            Button {
-                ble.send(.outputOn)
-            } label: {
-                Label("Output On", systemImage: "power")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
+        VStack(spacing: 10) {
+            if let remaining = t.idleRemainingSec {
+                HStack {
+                    StatusPill(
+                        text: "Output turns off in \(idleCountdown(remaining))",
+                        systemImage: "timer",
+                        tint: remaining <= 60 ? .orange : .secondary
+                    )
+                    Spacer()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+            } else if t.idleOutputOff {
+                HStack {
+                    StatusPill(
+                        text: "Output turned off after 15 minutes idle",
+                        systemImage: "powerplug.portrait",
+                        tint: .secondary
+                    )
+                    Spacer()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
-            .disabled(!ble.canSendCommands || t.dischargeEnabled)
-            .opacity((!ble.canSendCommands || t.dischargeEnabled) ? 0.55 : 1)
 
-            Button {
-                ble.send(.outputOff)
-            } label: {
-                Label("Output Off", systemImage: "poweroff")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
+            HStack(spacing: 12) {
+                Button {
+                    ble.send(.outputOn)
+                } label: {
+                    Label("Output On", systemImage: "power")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+                .disabled(!ble.canSendCommands || t.dischargeEnabled)
+                .opacity((!ble.canSendCommands || t.dischargeEnabled) ? 0.55 : 1)
+
+                Button {
+                    ble.send(.outputOff)
+                } label: {
+                    Label("Output Off", systemImage: "poweroff")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+                .disabled(!ble.canSendCommands || !t.dischargeEnabled)
+                .opacity((!ble.canSendCommands || !t.dischargeEnabled) ? 0.55 : 1)
             }
-            .buttonStyle(.bordered)
-            .tint(.red)
-            .disabled(!ble.canSendCommands || !t.dischargeEnabled)
-            .opacity((!ble.canSendCommands || !t.dischargeEnabled) ? 0.55 : 1)
+            .controlSize(.large)
+            .buttonBorderShape(.roundedRectangle(radius: 14))
         }
-        .controlSize(.large)
-        .buttonBorderShape(.roundedRectangle(radius: 14))
         .animation(Theme.motion, value: ble.canSendCommands)
         .animation(Theme.motion, value: t.dischargeEnabled)
+        .animation(Theme.motion, value: t.idleRemainingSec)
+        .animation(Theme.motion, value: t.idleOutputOff)
+    }
+
+    private func idleCountdown(_ seconds: UInt16) -> String {
+        let minutes = seconds / 60
+        let remainder = seconds % 60
+        return String(format: "%d:%02d", minutes, remainder)
     }
 
     private var backgroundGradient: some View {
@@ -284,6 +319,14 @@ struct EmptyTelemetryView: View {
 }
 
 #Preview {
+    let historyStore = HistoryStore(inMemory: true)
+    let alertManager = PowerbankAlertManager()
     ContentView()
-        .environmentObject(PowerbankBLEManager())
+        .environmentObject(PowerbankBLEManager(
+            historyStore: historyStore,
+            alertManager: alertManager
+        ))
+        .environmentObject(historyStore)
+        .environmentObject(alertManager)
+        .modelContainer(historyStore.container)
 }

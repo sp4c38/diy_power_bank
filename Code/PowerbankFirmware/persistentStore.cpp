@@ -1,0 +1,448 @@
+#include <ArduinoLog.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "persistentStore.h"
+
+static const char* statePath = "/pbank/state.bin";
+static const char* temporaryStatePath = "/pbank/state.tmp";
+static const char* historyPath = "/pbank/history.bin";
+
+PersistentStore::PersistentStore():
+    blockDevice(flashStart, flashSize),
+    fileSystem("pbank", nullptr, 64, 64, 4096, 128) {
+}
+
+bool PersistentStore::begin(PackMonitor& monitor) {
+    uintptr_t dataSize = (uintptr_t) &__data_end__ - (uintptr_t) &__data_start__;
+    uintptr_t imageEnd = (uintptr_t) &__etext + dataSize;
+    if (imageEnd > flashStart) {
+        Log.errorln("Persistent storage disabled: firmware overlaps reserved flash.");
+        return false;
+    }
+
+    int result = fileSystem.mount(&blockDevice);
+    if (result != 0) {
+        result = fileSystem.reformat(&blockDevice);
+    }
+    if (result != 0) {
+        Log.errorln("Persistent storage unavailable: %d", result);
+        return false;
+    }
+    mounted = true;
+
+    bool restored = loadState();
+    if (!restored) {
+        memset(&state, 0, sizeof(state));
+        state.magic = stateMagic;
+        state.version = stateVersion;
+        state.size = sizeof(State);
+        state.learnedCapacityMah = thresholds::usableCapacityMah;
+    }
+
+    state.bootId++;
+    if (state.gaugeValid) {
+        monitor.restoreGauge(
+            state.chargeMahTenths,
+            state.learnedCapacityMah,
+            state.learnedCapacityValid != 0
+        );
+    }
+
+    totalDischargedMah = (float) state.totalDischargedMahTenths / 10.0f;
+    totalEnergyWh = (float) state.totalEnergyMilliWh / 1000.0f;
+    calibrationDischargedMah = (float) state.calibrationDischargedMahTenths / 10.0f;
+    scanHistory();
+    saveState(monitor, monitor.snapshot());
+    Log.noticeln("Persistent storage ready; boot %lu; history %lu-%lu.",
+        (unsigned long) state.bootId,
+        (unsigned long) oldestSequence,
+        (unsigned long) latestSequence);
+    return true;
+}
+
+bool PersistentStore::available() const {
+    return mounted;
+}
+
+void PersistentStore::update(
+    PackMonitor& monitor,
+    const PackSnapshot& snapshot,
+    uint16_t telemetryFlags,
+    bool chargeComplete
+) {
+    if (!mounted || !snapshot.trusted) {
+        return;
+    }
+
+    uint32_t nowMs = millis();
+    uint32_t dtMs = lastHealthUpdateMs == 0 ? 0 : nowMs - lastHealthUpdateMs;
+    lastHealthUpdateMs = nowMs;
+
+    if (dtMs > 0 && dtMs < 5000) {
+        if (snapshot.currentMa < 0) {
+            float dischargedMah = (float) -snapshot.currentMa * ((float) dtMs / 3600000.0f);
+            totalDischargedMah += dischargedMah;
+            totalEnergyWh += dischargedMah / 1000.0f * ((float) snapshot.packMv / 1000.0f);
+            if (state.calibrationActive) {
+                calibrationDischargedMah += dischargedMah;
+            }
+        }
+
+        if (snapshot.dieTempCentiC >= 4500) {
+            hotRemainderMs += dtMs;
+            if (hotRemainderMs >= 1000) {
+                state.hotSeconds += hotRemainderMs / 1000;
+                hotRemainderMs %= 1000;
+            }
+        } else {
+            hotRemainderMs = 0;
+        }
+    }
+
+    if (snapshot.dieTempCentiC > state.maximumTempCentiC) {
+        state.maximumTempCentiC = snapshot.dieTempCentiC;
+    }
+
+    if (abs(snapshot.currentMa) <= thresholds::idleCurrentMa &&
+        (lastIdleDeltaSampleMs == 0 || nowMs - lastIdleDeltaSampleMs >= 60000UL)) {
+        uint16_t delta = monitor.cellDeltaMv();
+        state.idleDeltaTotalMv += delta;
+        state.idleDeltaSamples++;
+        state.maximumIdleDeltaMv = max(state.maximumIdleDeltaMv, delta);
+        lastIdleDeltaSampleMs = nowMs;
+    }
+
+    if (chargeComplete && !lastChargeComplete) {
+        state.calibrationActive = 1;
+        calibrationDischargedMah = 0.0f;
+    }
+    lastChargeComplete = chargeComplete;
+
+    bool completedCalibration = state.calibrationActive &&
+        monitor.minCellMv() <= thresholds::outputOffMv;
+    if (completedCalibration) {
+        if (calibrationDischargedMah >= 1600.0f && calibrationDischargedMah <= 4000.0f) {
+            uint16_t measured = (uint16_t) lroundf(calibrationDischargedMah);
+            if (state.learnedCapacityValid) {
+                state.learnedCapacityMah = (uint16_t) lroundf(
+                    (float) state.learnedCapacityMah * 0.75f + (float) measured * 0.25f
+                );
+            } else {
+                state.learnedCapacityMah = measured;
+            }
+            state.learnedCapacityValid = 1;
+            state.validCapacityCycles++;
+            monitor.setLearnedCapacity(state.learnedCapacityMah, true);
+        }
+        state.calibrationActive = 0;
+        calibrationDischargedMah = 0.0f;
+    }
+
+    bool gaugeReconciled = monitor.consumeLargeGaugeReconciliation();
+    if (gaugeReconciled) {
+        state.learnedCapacityValid = 0;
+        state.validCapacityCycles = 0;
+        monitor.setLearnedCapacity(thresholds::usableCapacityMah, false);
+    }
+
+    bool historyWritten = false;
+    if (shouldRecordHistory(snapshot, telemetryFlags, nowMs)) {
+        historyWritten = appendHistory(monitor, snapshot, telemetryFlags);
+    }
+
+    bool anchor = monitor.minCellMv() <= thresholds::outputOffMv ||
+        monitor.maxCellMv() >= thresholds::chargeStopMv;
+    bool anchorReached = anchor && !lastAtAnchor;
+    lastAtAnchor = anchor;
+    bool stateChanged = !hasHistoryBaseline ||
+        snapshot.state != lastHistoryState ||
+        snapshot.faultFlags != lastHistoryFaults;
+    bool checkpointDue = lastCheckpointMs == 0 || nowMs - lastCheckpointMs >= 900000UL;
+    if (checkpointDue || anchorReached || stateChanged || gaugeReconciled || completedCalibration || historyWritten) {
+        saveState(monitor, snapshot);
+        lastCheckpointMs = nowMs;
+    }
+}
+
+void PersistentStore::setTime(uint32_t unixTime, uint32_t uptimeSec) {
+    syncedUnixTime = unixTime;
+    syncedUptimeSec = uptimeSec;
+}
+
+void PersistentStore::resetLearnedBattery(PackMonitor& monitor) {
+    if (!mounted) {
+        monitor.resetGauge();
+        return;
+    }
+
+    uint32_t currentBootId = state.bootId;
+    memset(&state, 0, sizeof(state));
+    state.magic = stateMagic;
+    state.version = stateVersion;
+    state.size = sizeof(State);
+    state.bootId = currentBootId;
+    state.learnedCapacityMah = thresholds::usableCapacityMah;
+    totalDischargedMah = 0.0f;
+    totalEnergyWh = 0.0f;
+    calibrationDischargedMah = 0.0f;
+    oldestSequence = 0;
+    latestSequence = 0;
+    nextSequence = 1;
+    hasHistoryBaseline = false;
+    remove(historyPath);
+    monitor.resetGauge();
+    saveState(monitor, monitor.snapshot());
+}
+
+HealthPayload PersistentStore::healthPayload() const {
+    HealthPayload payload = {};
+    payload.version = 1;
+    payload.confidence = state.learnedCapacityValid ? 1 : 0;
+    payload.learnedCapacityMah = state.learnedCapacityValid
+        ? state.learnedCapacityMah
+        : thresholds::usableCapacityMah;
+    payload.totalDischargedMah = (uint32_t) min(
+        (double) totalDischargedMah,
+        (double) UINT32_MAX
+    );
+    payload.totalEnergyWhTenths = (uint32_t) min(
+        (double) totalEnergyWh * 10.0,
+        (double) UINT32_MAX
+    );
+    float cycleCapacity = state.learnedCapacityValid
+        ? (float) state.learnedCapacityMah
+        : (float) thresholds::usableCapacityMah;
+    payload.equivalentCyclesTenths = cycleCapacity > 0
+        ? (uint32_t) lroundf(totalDischargedMah / cycleCapacity * 10.0f)
+        : 0;
+    payload.hotMinutes = (uint32_t) min(state.hotSeconds / 60ULL, 0xFFFFFFFFULL);
+    payload.maximumTempCentiC = state.maximumTempCentiC;
+    payload.averageIdleDeltaMv = state.idleDeltaSamples > 0
+        ? (uint16_t) min(state.idleDeltaTotalMv / state.idleDeltaSamples, 65535ULL)
+        : 0;
+    payload.maximumIdleDeltaMv = state.maximumIdleDeltaMv;
+    payload.validCapacityCycles = state.validCapacityCycles;
+    return payload;
+}
+
+uint32_t PersistentStore::bootId() const {
+    return state.bootId;
+}
+
+uint32_t PersistentStore::oldestHistorySequence() const {
+    return oldestSequence;
+}
+
+uint32_t PersistentStore::latestHistorySequence() const {
+    return latestSequence;
+}
+
+bool PersistentStore::readHistory(uint32_t sequence, HistoryRecordPayload& record) {
+    if (!mounted || sequence == 0 || sequence < oldestSequence || sequence > latestSequence) {
+        return false;
+    }
+    FILE* file = fopen(historyPath, "rb");
+    if (file == nullptr) {
+        return false;
+    }
+    uint32_t slot = (sequence - 1) % historyCapacity;
+    fseek(file, (long) slot * sizeof(StoredHistoryRecord), SEEK_SET);
+    StoredHistoryRecord stored = {};
+    size_t count = fread(&stored, sizeof(stored), 1, file);
+    fclose(file);
+    if (count != 1 ||
+        stored.payload.sequence != sequence ||
+        stored.checksum != (uint16_t) checksum(&stored.payload, sizeof(stored.payload))) {
+        return false;
+    }
+    record = stored.payload;
+    return true;
+}
+
+bool PersistentStore::loadState() {
+    FILE* file = fopen(statePath, "rb");
+    if (file == nullptr) {
+        return false;
+    }
+    State candidate = {};
+    size_t count = fread(&candidate, sizeof(candidate), 1, file);
+    fclose(file);
+    uint32_t storedChecksum = candidate.checksum;
+    candidate.checksum = 0;
+    bool valid = count == 1 &&
+        candidate.magic == stateMagic &&
+        candidate.version == stateVersion &&
+        candidate.size == sizeof(State) &&
+        storedChecksum == checksum(&candidate, sizeof(candidate));
+    if (!valid) {
+        return false;
+    }
+    candidate.checksum = storedChecksum;
+    state = candidate;
+    return true;
+}
+
+bool PersistentStore::saveState(const PackMonitor& monitor, const PackSnapshot& snapshot) {
+    if (!mounted) {
+        return false;
+    }
+    state.magic = stateMagic;
+    state.version = stateVersion;
+    state.size = sizeof(State);
+    state.chargeMahTenths = monitor.chargeMahTenths();
+    if (snapshot.trusted) {
+        state.gaugeValid = 1;
+        state.lastCell1Mv = snapshot.cell1Mv;
+        state.lastCell2Mv = snapshot.cell2Mv;
+        state.lastCell5Mv = snapshot.cell5Mv;
+    }
+    state.calibrationDischargedMahTenths =
+        (uint32_t) min((double) calibrationDischargedMah * 10.0, (double) UINT32_MAX);
+    state.totalDischargedMahTenths =
+        (uint64_t) max(0.0f, totalDischargedMah * 10.0f);
+    state.totalEnergyMilliWh =
+        (uint64_t) max(0.0f, totalEnergyWh * 1000.0f);
+    state.checksum = 0;
+    state.checksum = checksum(&state, sizeof(state));
+
+    FILE* file = fopen(temporaryStatePath, "wb");
+    if (file == nullptr) {
+        return false;
+    }
+    bool written = fwrite(&state, sizeof(state), 1, file) == 1;
+    fflush(file);
+    fclose(file);
+    if (!written) {
+        remove(temporaryStatePath);
+        return false;
+    }
+    int result = rename(temporaryStatePath, statePath);
+    if (result == 0) {
+        return true;
+    }
+    remove(statePath);
+    return rename(temporaryStatePath, statePath) == 0;
+}
+
+void PersistentStore::scanHistory() {
+    oldestSequence = 0;
+    latestSequence = 0;
+    uint32_t maximumStoredBootId = 0;
+    FILE* file = fopen(historyPath, "rb");
+    if (file == nullptr) {
+        nextSequence = 1;
+        return;
+    }
+    for (uint16_t slot = 0; slot < historyCapacity; slot++) {
+        StoredHistoryRecord stored = {};
+        if (fread(&stored, sizeof(stored), 1, file) != 1) {
+            break;
+        }
+        if (stored.payload.sequence != 0 &&
+            stored.checksum == (uint16_t) checksum(&stored.payload, sizeof(stored.payload))) {
+            latestSequence = max(latestSequence, stored.payload.sequence);
+            maximumStoredBootId = max(maximumStoredBootId, stored.payload.bootId);
+        }
+    }
+    fclose(file);
+    if (latestSequence > 0) {
+        oldestSequence = latestSequence >= historyCapacity
+            ? latestSequence - historyCapacity + 1
+            : 1;
+        nextSequence = latestSequence + 1;
+    } else {
+        nextSequence = 1;
+    }
+    if (state.bootId <= maximumStoredBootId) {
+        state.bootId = maximumStoredBootId + 1;
+    }
+}
+
+bool PersistentStore::appendHistory(
+    const PackMonitor& monitor,
+    const PackSnapshot& snapshot,
+    uint16_t telemetryFlags
+) {
+    HistoryRecordPayload payload = {};
+    payload.sequence = nextSequence;
+    payload.bootId = state.bootId;
+    payload.uptimeSec = snapshot.updatedAtMs / 1000UL;
+    payload.epochSec = epochForUptime(payload.uptimeSec);
+    payload.flags = telemetryFlags;
+    payload.faults = snapshot.faultFlags;
+    payload.cell1Mv = snapshot.cell1Mv;
+    payload.cell2Mv = snapshot.cell2Mv;
+    payload.cell5Mv = snapshot.cell5Mv;
+    payload.packMv = snapshot.packMv;
+    payload.currentMa = snapshot.currentMa;
+    payload.dieTempCentiC = snapshot.dieTempCentiC;
+    payload.socPercent = monitor.socPercent();
+    payload.state = (uint8_t) snapshot.state;
+
+    StoredHistoryRecord stored = {};
+    stored.payload = payload;
+    stored.checksum = (uint16_t) checksum(&stored.payload, sizeof(stored.payload));
+
+    FILE* file = fopen(historyPath, "r+b");
+    if (file == nullptr) {
+        file = fopen(historyPath, "w+b");
+    }
+    if (file == nullptr) {
+        return false;
+    }
+    uint32_t slot = (payload.sequence - 1) % historyCapacity;
+    fseek(file, (long) slot * sizeof(StoredHistoryRecord), SEEK_SET);
+    bool written = fwrite(&stored, sizeof(stored), 1, file) == 1;
+    fflush(file);
+    fclose(file);
+    if (!written) {
+        return false;
+    }
+
+    latestSequence = payload.sequence;
+    oldestSequence = latestSequence >= historyCapacity
+        ? latestSequence - historyCapacity + 1
+        : 1;
+    nextSequence++;
+    lastHistoryMs = millis();
+    lastHistoryFlags = telemetryFlags;
+    lastHistoryFaults = snapshot.faultFlags;
+    lastHistoryState = snapshot.state;
+    hasHistoryBaseline = true;
+    return true;
+}
+
+bool PersistentStore::shouldRecordHistory(
+    const PackSnapshot& snapshot,
+    uint16_t telemetryFlags,
+    uint32_t nowMs
+) const {
+    if (!hasHistoryBaseline || lastHistoryMs == 0 || nowMs - lastHistoryMs >= 600000UL) {
+        return true;
+    }
+    const uint16_t eventFlags = FLAG_LOW_CELL_WARN |
+        FLAG_CHARGE_COMPLETE |
+        FLAG_BALANCE_TIMEOUT |
+        FLAG_IDLE_OUTPUT_OFF;
+    return snapshot.state != lastHistoryState ||
+        snapshot.faultFlags != lastHistoryFaults ||
+        (telemetryFlags & eventFlags) != (lastHistoryFlags & eventFlags);
+}
+
+uint32_t PersistentStore::epochForUptime(uint32_t uptimeSec) const {
+    if (syncedUnixTime == 0 || uptimeSec < syncedUptimeSec) {
+        return 0;
+    }
+    return syncedUnixTime + (uptimeSec - syncedUptimeSec);
+}
+
+uint32_t PersistentStore::checksum(const void* bytes, size_t length) {
+    const uint8_t* data = (const uint8_t*) bytes;
+    uint32_t value = 2166136261UL;
+    for (size_t index = 0; index < length; index++) {
+        value ^= data[index];
+        value *= 16777619UL;
+    }
+    return value;
+}

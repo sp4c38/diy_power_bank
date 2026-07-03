@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ControlsView: View {
     @EnvironmentObject private var ble: PowerbankBLEManager
+    @EnvironmentObject private var alerts: PowerbankAlertManager
     @State private var developerMode = false
     @State private var pendingCommand: PowerbankCommand?
 
@@ -23,6 +24,13 @@ struct ControlsView: View {
                     SectionCard(title: "Power", systemImage: "moon.zzz") {
                         commandRow(.ship, tint: .indigo)
                     }
+
+                    if ble.connectionState.isConnected && alerts.shouldOfferPermission {
+                        notificationPermissionCard
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    alertSection
 
                     developerSection
                 }
@@ -56,7 +64,7 @@ struct ControlsView: View {
             Toggle(isOn: $developerMode.animation()) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Developer overrides").font(.subheadline.weight(.medium))
-                    Text("Directly toggle the charge FET. Use with care.")
+                    Text("Advanced power and battery service actions. Use with care.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -71,6 +79,49 @@ struct ControlsView: View {
                     .transition(.opacity)
                 commandRow(.chargeOff, tint: .orange)
                     .transition(.move(edge: .top).combined(with: .opacity))
+                Divider()
+                    .transition(.opacity)
+                commandRow(.resetLearnedBattery, tint: .red)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+    }
+
+    private var alertSection: some View {
+        SectionCard(title: "Alerts & Live Activity", systemImage: "bell.badge") {
+            preferenceToggle("Charging complete", isOn: $alerts.chargingCompleteEnabled)
+            Divider()
+            preferenceToggle("Low cell", isOn: $alerts.lowCellEnabled)
+            Divider()
+            preferenceToggle("High temperature", isOn: $alerts.temperatureEnabled)
+            Divider()
+            preferenceToggle("Balancing limit", isOn: $alerts.balancingEnabled)
+            Divider()
+            preferenceToggle("Protection faults", isOn: $alerts.faultsEnabled)
+            Divider()
+            preferenceToggle("Live Activity", isOn: $alerts.liveActivitiesEnabled)
+        }
+    }
+
+    private var notificationPermissionCard: some View {
+        SectionCard(title: nil, systemImage: nil) {
+            HStack(spacing: 12) {
+                Image(systemName: "bell.badge.fill")
+                    .font(.title3)
+                    .foregroundStyle(.blue)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Stay informed")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Allow notifications for battery and safety changes.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Enable") {
+                    alerts.requestPermission()
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
             }
         }
     }
@@ -117,6 +168,12 @@ struct ControlsView: View {
         .disabled(!ble.canSendCommands)
         .opacity(ble.canSendCommands ? 1 : 0.5)
         .animation(Theme.motion, value: ble.canSendCommands)
+    }
+
+    private func preferenceToggle(_ title: String, isOn: Binding<Bool>) -> some View {
+        Toggle(title, isOn: isOn)
+            .font(.subheadline)
+            .tint(.accentColor)
     }
 
     private func trigger(_ command: PowerbankCommand) {

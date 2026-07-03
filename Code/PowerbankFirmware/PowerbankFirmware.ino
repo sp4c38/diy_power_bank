@@ -13,6 +13,7 @@
 #include "bleApp.h"
 #include "bq76920Driver.h"
 #include "packMonitor.h"
+#include "persistentStore.h"
 #include "powerManager.h"
 #include "safetyPolicy.h"
 #include "serialConsole.h"
@@ -25,6 +26,7 @@ Balancer balancer;
 PowerManager powerManager;
 BLEApp bleApp;
 SerialConsole serialConsole;
+PersistentStore persistentStore;
 ControlState controls;
 PolicyDecision lastDecision;
 
@@ -37,6 +39,7 @@ void refreshAndApply();
 void applyDecision(const PolicyDecision& decision);
 void setBqOffline(const char* reason);
 void logPeriodicStatus();
+uint16_t telemetryFlags();
 
 void setup() {
     Serial.begin(9600);
@@ -56,7 +59,9 @@ void setup() {
     Log.noticeln("Type 'help' for serial commands.");
 
     bqOnline = initializeBq();
+    persistentStore.begin(monitor);
     bleOnline = bleApp.begin();
+    bleApp.attachStore(&persistentStore);
 }
 
 void loop() {
@@ -67,8 +72,23 @@ void loop() {
 
     refreshAndApply();
 
+    uint16_t idleRemainingSec = powerManager.idleRemainingSec(monitor.snapshot(), controls);
+    bool chargeComplete = controls.chargeLatchedOff &&
+        monitor.maxCellMv() >= thresholds::chargeStopMv;
+    persistentStore.update(monitor, monitor.snapshot(), telemetryFlags(), chargeComplete);
+
     if (bleOnline) {
-        bleApp.update(monitor.snapshot(), monitor.socPercent(), monitor.chargeMahTenths(), balancer.active(), bleApp.connected());
+        bleApp.update(
+            monitor.snapshot(),
+            monitor.socPercent(),
+            monitor.chargeMahTenths(),
+            balancer.active(),
+            bleApp.connected(),
+            controls,
+            idleRemainingSec,
+            powerManager.automaticShutdownOccurred(),
+            balancer.timedOut()
+        );
     }
 
     logPeriodicStatus();
@@ -186,6 +206,7 @@ bool handleCommand(CommandId command, bool confirmed, char* result, size_t resul
                 snprintf(result, resultSize, "Failed to disable balancing");
                 return false;
             }
+            balancer.clearTimeout();
             snprintf(result, resultSize, "Balancing off");
             return true;
 
@@ -224,11 +245,41 @@ bool handleCommand(CommandId command, bool confirmed, char* result, size_t resul
             snprintf(result, resultSize, "Raw diagnostics available over serial");
             return true;
 
+        case CommandId::ResetLearnedBattery:
+            if (!confirmed) {
+                snprintf(result, resultSize, "Battery reset requires confirmation");
+                return false;
+            }
+            balancer.clearTimeout();
+            persistentStore.resetLearnedBattery(monitor);
+            snprintf(result, resultSize, "Learned battery data reset");
+            return true;
+
         case CommandId::None:
         default:
             snprintf(result, resultSize, "Unknown command");
             return false;
     }
+}
+
+uint16_t telemetryFlags() {
+    const PackSnapshot& snapshot = monitor.snapshot();
+    uint16_t flags = 0;
+    if (snapshot.trusted) flags |= FLAG_MEASUREMENTS_TRUSTED;
+    if (snapshot.sysCtrl2 & (1 << (uint8_t) SysControlOpt::CHG_ON)) flags |= FLAG_CHG_ON;
+    if (snapshot.sysCtrl2 & (1 << (uint8_t) SysControlOpt::DSG_ON)) flags |= FLAG_DSG_ON;
+    if (controls.chargeManuallyDisabled) flags |= FLAG_MANUAL_CHARGE_OFF;
+    if (controls.dischargeManuallyDisabled) flags |= FLAG_MANUAL_DISCHARGE_OFF;
+    if (powerManager.automaticShutdownOccurred()) flags |= FLAG_IDLE_OUTPUT_OFF;
+    if (balancer.active()) flags |= FLAG_BALANCING;
+    if (snapshot.lowCellWarning) flags |= FLAG_LOW_CELL_WARN;
+    if (snapshot.stale) flags |= FLAG_STALE;
+    if (bleApp.connected()) flags |= FLAG_BLE_CONNECTED;
+    if (controls.chargeLatchedOff && monitor.maxCellMv() >= thresholds::chargeStopMv) {
+        flags |= FLAG_CHARGE_COMPLETE;
+    }
+    if (balancer.timedOut()) flags |= FLAG_BALANCE_TIMEOUT;
+    return flags;
 }
 
 void setBqOffline(const char* reason) {

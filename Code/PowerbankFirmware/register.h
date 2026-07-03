@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-const char FIRMWARE_VERSION[] = "0.2.0";
-const uint8_t BLE_PROTOCOL_VERSION = 2;
+const char FIRMWARE_VERSION[] = "0.3.0";
+const uint8_t BLE_PROTOCOL_VERSION = 3;
 
 const uint8_t I2C_BQ76920_ADDRESS = 0x08;
 const uint8_t ALERT_PIN = 10;
@@ -102,6 +102,10 @@ namespace bleUuid {
     const char command[] = "7E571002-40A1-4E31-8E9D-4AC0D8B2A100";
     const char commandResult[] = "7E571003-40A1-4E31-8E9D-4AC0D8B2A100";
     const char deviceInfo[] = "7E571004-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char historyControl[] = "7E571005-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char historyData[] = "7E571006-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char health[] = "7E571007-40A1-4E31-8E9D-4AC0D8B2A100";
+    const char timeSync[] = "7E571008-40A1-4E31-8E9D-4AC0D8B2A100";
 }
 
 enum class PackState : uint8_t {
@@ -127,7 +131,9 @@ enum TelemetryFlags : uint16_t {
     FLAG_BALANCING = 1 << 6,
     FLAG_LOW_CELL_WARN = 1 << 7,
     FLAG_STALE = 1 << 8,
-    FLAG_BLE_CONNECTED = 1 << 9
+    FLAG_BLE_CONNECTED = 1 << 9,
+    FLAG_CHARGE_COMPLETE = 1 << 10,
+    FLAG_BALANCE_TIMEOUT = 1 << 11
 };
 
 enum FaultFlags : uint16_t {
@@ -154,7 +160,8 @@ enum class CommandId : uint8_t {
     ChargeOff = 7,
     DischargeOn = 8,
     DischargeOff = 9,
-    RawDiagnostics = 10
+    RawDiagnostics = 10,
+    ResetLearnedBattery = 11
 };
 
 typedef bool (*CommandHandler)(CommandId command, bool confirmed, char* result, size_t resultSize);
@@ -207,12 +214,73 @@ struct TelemetryPayload {
     uint8_t socPercent;
     uint32_t uptimeSec;
     uint16_t chargeMahTenths; // coulomb-counted charge in 0.1 mAh units (protocol v2)
+    uint16_t idleRemainingSec; // protocol v3; 0xFFFF when no countdown is active
 };
 
 struct CommandPayload {
     uint8_t command;
     uint8_t confirmation;
 };
+
+struct HistoryRequestPayload {
+    uint8_t operation; // 1 = stream records after sequence, 2 = cancel
+    uint32_t afterSequence;
+};
+
+struct HistoryStatusPayload {
+    uint8_t state; // 0 = idle, 1 = streaming, 2 = complete
+    uint32_t oldestSequence;
+    uint32_t latestSequence;
+    uint32_t bootId;
+};
+
+struct HistoryRecordPayload {
+    uint32_t sequence;
+    uint32_t bootId;
+    uint32_t epochSec; // 0 when wall-clock time was unavailable
+    uint32_t uptimeSec;
+    uint16_t flags;
+    uint16_t faults;
+    uint16_t cell1Mv;
+    uint16_t cell2Mv;
+    uint16_t cell5Mv;
+    uint16_t packMv;
+    int16_t currentMa;
+    int16_t dieTempCentiC;
+    uint8_t socPercent;
+    uint8_t state;
+};
+
+struct HistoryChunkPayload {
+    uint32_t sequence;
+    uint8_t chunkIndex;
+    uint8_t chunkCount;
+    uint8_t payloadLength;
+    uint8_t payload[13];
+};
+
+struct HealthPayload {
+    uint8_t version;
+    uint8_t confidence; // 0 = learning, 1 = estimated
+    uint16_t learnedCapacityMah;
+    uint32_t totalDischargedMah;
+    uint32_t totalEnergyWhTenths;
+    uint32_t equivalentCyclesTenths;
+    uint32_t hotMinutes;
+    int16_t maximumTempCentiC;
+    uint16_t averageIdleDeltaMv;
+    uint16_t maximumIdleDeltaMv;
+    uint16_t validCapacityCycles;
+};
+
+struct TimeSyncPayload {
+    uint32_t unixTime;
+};
 #pragma pack(pop)
+
+static_assert(sizeof(TelemetryPayload) == 28, "Telemetry protocol v3 layout changed");
+static_assert(sizeof(HistoryRecordPayload) == 34, "History record layout changed");
+static_assert(sizeof(HistoryChunkPayload) == 20, "History chunks must fit the minimum BLE payload");
+static_assert(sizeof(HealthPayload) == 28, "Health payload layout changed");
 
 #endif

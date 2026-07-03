@@ -18,6 +18,13 @@ public:
     uint16_t minCellMv() const;
     uint16_t maxCellMv() const;
     uint16_t cellDeltaMv() const;
+    void restoreGauge(uint16_t chargeMahTenths, uint16_t learnedCapacityMah, bool learnedCapacityValid);
+    void resetGauge();
+    void setLearnedCapacity(uint16_t learnedCapacityMah, bool valid);
+    bool consumeLargeGaugeReconciliation();
+    bool gaugeIsProvisional() const;
+    float chargeMahValue() const;
+    uint16_t effectiveCapacityMah() const;
 
 private:
     void pushSample(const PackSnapshot& sample);
@@ -28,8 +35,14 @@ private:
 
     PackSnapshot current;
     float chargeMah = 0.0f;
+    float capacityMah = thresholds::usableCapacityMah;
     bool socInitialized = false;
     unsigned long lastCoulombMs = 0;
+    unsigned long restoredIdleSinceMs = 0;
+    bool reconciliationPending = false;
+    bool largeGaugeReconciliation = false;
+    float correctionRemainingMah = 0.0f;
+    float correctionRateMahPerMs = 0.0f;
     PackSnapshot previousSample;
     BqRawReadings lastRaw;
     bool hasPreviousSample = false;

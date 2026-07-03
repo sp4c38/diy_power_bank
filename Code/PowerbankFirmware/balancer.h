@@ -12,12 +12,15 @@ public:
     bool stop(Bq76920Driver& driver);
     bool active() const;
     uint8_t mask() const;
+    bool timedOut() const;
+    void clearTimeout();
 
 private:
     uint8_t chooseCellToBalance(const PackSnapshot& snapshot) const;
 
     uint8_t activeMask = 0;
     unsigned long startedAtMs = 0;
+    bool timeoutLatched = false;
 };
 
 #endif

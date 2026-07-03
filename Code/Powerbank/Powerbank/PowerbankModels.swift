@@ -103,6 +103,8 @@ struct Telemetry: Equatable {
     let uptimeSec: UInt32
     /// Coulomb-counted charge in 0.1 mAh units (protocol v2+); nil from older firmware.
     let chargeMahTenths: UInt16?
+    /// Seconds until the fixed idle shutdown (protocol v3+); nil when inactive or unsupported.
+    let idleRemainingSec: UInt16?
     let receivedAt: Date
 
     // MARK: - Flag accessors (mirror firmware TelemetryFlags)
@@ -116,6 +118,8 @@ struct Telemetry: Equatable {
     var lowCellWarning: Bool { flags & (1 << 7) != 0 }
     var staleFromFirmware: Bool { flags & (1 << 8) != 0 }
     var bleConnected: Bool { flags & (1 << 9) != 0 }
+    var chargeComplete: Bool { flags & (1 << 10) != 0 }
+    var balanceTimedOut: Bool { flags & (1 << 11) != 0 }
 
     // MARK: - Derived values
     var temperatureC: Double { Double(dieTempCentiC) / 100.0 }
@@ -248,6 +252,7 @@ struct Telemetry: Equatable {
         let uptime = u32()
         // Protocol v2 appends the full-resolution charge; older firmware omits it.
         let chargeTenths: UInt16? = data.count >= 26 ? u16() : nil
+        let idleRemaining: UInt16? = data.count >= 28 ? u16() : nil
 
         return Telemetry(
             protocolVersion: protocolVersion,
@@ -264,6 +269,7 @@ struct Telemetry: Equatable {
             socPercent: soc,
             uptimeSec: uptime,
             chargeMahTenths: chargeTenths,
+            idleRemainingSec: idleRemaining == 0xFFFF ? nil : idleRemaining,
             receivedAt: Date()
         )
     }
@@ -292,6 +298,7 @@ struct PowerbankFault: Identifiable, Equatable {
         add(5, "Temperature", "Die temperature is out of range.", "thermometer.high")
         add(6, "BQ Offline", "Lost I2C contact with the BQ76920.", "cable.connector.slash")
         add(7, "Output Low Cell", "Output disabled to protect a low cell.", "battery.25percent")
+        add(8, "BQ Not Ready", "The battery monitor is not ready for normal operation.", "clock.badge.exclamationmark")
         return result
     }
 }
@@ -314,7 +321,9 @@ struct PowerbankFlag: Identifiable, Equatable {
             (6, "Balancing"),
             (7, "Low Cell Warning"),
             (8, "Firmware Stale"),
-            (9, "BLE Connected")
+            (9, "BLE Connected"),
+            (10, "Charge Complete"),
+            (11, "Balance Timed Out")
         ]
         return definitions.map { bit, title in
             let mask = UInt16(1 << bit)
@@ -334,6 +343,7 @@ enum PowerbankCommand: UInt8, CaseIterable, Identifiable {
     case dischargeOn = 8
     case dischargeOff = 9
     case rawDiagnostics = 10
+    case resetLearnedBattery = 11
 
     var id: UInt8 { rawValue }
 
@@ -349,6 +359,7 @@ enum PowerbankCommand: UInt8, CaseIterable, Identifiable {
         case .dischargeOn: "Discharge On"
         case .dischargeOff: "Discharge Off"
         case .rawDiagnostics: "Raw Diagnostics"
+        case .resetLearnedBattery: "New Battery Cells"
         }
     }
 
@@ -364,6 +375,7 @@ enum PowerbankCommand: UInt8, CaseIterable, Identifiable {
         case .dischargeOn: "arrow.down.circle.fill"
         case .dischargeOff: "arrow.down.circle"
         case .rawDiagnostics: "doc.text.magnifyingglass"
+        case .resetLearnedBattery: "battery.100percent.circle"
         }
     }
 
@@ -380,12 +392,13 @@ enum PowerbankCommand: UInt8, CaseIterable, Identifiable {
         case .dischargeOn: "Developer override: allow the discharge FET."
         case .dischargeOff: "Developer override: block the discharge FET."
         case .rawDiagnostics: "Dump raw ADC/register diagnostics over serial."
+        case .resetLearnedBattery: "Clear the saved gauge, history, and learned cell health."
         }
     }
 
     var requiresConfirmation: Bool {
         switch self {
-        case .ship, .chargeOn, .dischargeOn:
+        case .ship, .chargeOn, .dischargeOn, .resetLearnedBattery:
             true
         default:
             false
@@ -396,7 +409,7 @@ enum PowerbankCommand: UInt8, CaseIterable, Identifiable {
     /// extra in-app confirmation prompt.
     var isDestructive: Bool {
         switch self {
-        case .ship, .outputOff, .chargeOff, .dischargeOff:
+        case .ship, .outputOff, .chargeOff, .dischargeOff, .resetLearnedBattery:
             true
         default:
             false

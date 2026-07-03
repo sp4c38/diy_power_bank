@@ -76,7 +76,7 @@ void PackMonitor::updateStateOfCharge(const PackSnapshot& sample) {
         if (!sample.trusted) {
             return;
         }
-        chargeMah = ocvSocFraction(lowCell) * (float) thresholds::usableCapacityMah;
+        chargeMah = ocvSocFraction(lowCell) * capacityMah;
         lastCoulombMs = now;
         socInitialized = true;
         return;
@@ -84,20 +84,55 @@ void PackMonitor::updateStateOfCharge(const PackSnapshot& sample) {
 
     // Integrate charge: positive current charges, negative discharges. Skip
     // implausibly long gaps (e.g. after a BQ stall) so they don't jump the count.
-    unsigned long dtMs = now - lastCoulombMs;
+    unsigned long previousCoulombMs = lastCoulombMs;
+    unsigned long dtMs = previousCoulombMs == 0 ? 0 : now - previousCoulombMs;
     lastCoulombMs = now;
     if (dtMs > 0 && dtMs < 5000) {
         chargeMah += (float) sample.currentMa * ((float) dtMs / 3600000.0f);
     }
 
+    if (correctionRemainingMah != 0.0f && dtMs > 0 && dtMs < 5000) {
+        float correction = correctionRateMahPerMs * (float) dtMs;
+        if (abs(correction) >= abs(correctionRemainingMah)) {
+            correction = correctionRemainingMah;
+        }
+        chargeMah += correction;
+        correctionRemainingMah -= correction;
+    }
+
+    if (reconciliationPending) {
+        bool resting = sample.trusted && abs(sample.currentMa) <= thresholds::idleCurrentMa;
+        if (!resting) {
+            restoredIdleSinceMs = 0;
+        } else if (restoredIdleSinceMs == 0) {
+            restoredIdleSinceMs = now;
+        } else if (now - restoredIdleSinceMs >= 30000UL) {
+            float voltageMah = ocvSocFraction(lowCell) * capacityMah;
+            float differencePercent = abs(voltageMah - chargeMah) / capacityMah * 100.0f;
+            if (differencePercent > 20.0f) {
+                chargeMah = voltageMah;
+                correctionRemainingMah = 0.0f;
+                largeGaugeReconciliation = true;
+            } else if (differencePercent > 8.0f) {
+                correctionRemainingMah = (voltageMah - chargeMah) * 0.25f;
+                correctionRateMahPerMs = correctionRemainingMah / 60000.0f;
+            }
+            reconciliationPending = false;
+        }
+    }
+
     // Re-anchor at the window edges so integration drift cannot accumulate.
     if (lowCell <= thresholds::outputOffMv) {
         chargeMah = 0.0f;
+        reconciliationPending = false;
+        correctionRemainingMah = 0.0f;
     } else if (highCell >= thresholds::chargeStopMv) {
-        chargeMah = (float) thresholds::usableCapacityMah;
+        chargeMah = capacityMah;
+        reconciliationPending = false;
+        correctionRemainingMah = 0.0f;
     }
 
-    chargeMah = constrain(chargeMah, 0.0f, (float) thresholds::usableCapacityMah);
+    chargeMah = constrain(chargeMah, 0.0f, capacityMah);
 }
 
 void PackMonitor::markBqOffline() {
@@ -222,7 +257,7 @@ uint8_t PackMonitor::socPercent() const {
     if (!socInitialized) {
         return (uint8_t) lroundf(ocvSocFraction(minCellMv()) * 100.0f);
     }
-    float pct = chargeMah / (float) thresholds::usableCapacityMah * 100.0f;
+    float pct = chargeMah / capacityMah * 100.0f;
     return (uint8_t) constrain((long) lroundf(pct), 0L, 100L);
 }
 
@@ -244,4 +279,57 @@ uint16_t PackMonitor::maxCellMv() const {
 
 uint16_t PackMonitor::cellDeltaMv() const {
     return maxCellMv() - minCellMv();
+}
+
+void PackMonitor::restoreGauge(uint16_t savedChargeMahTenths, uint16_t learnedCapacityMah, bool learnedCapacityValid) {
+    setLearnedCapacity(learnedCapacityMah, learnedCapacityValid);
+    chargeMah = constrain((float) savedChargeMahTenths / 10.0f, 0.0f, capacityMah);
+    socInitialized = true;
+    lastCoulombMs = 0;
+    restoredIdleSinceMs = 0;
+    reconciliationPending = true;
+    correctionRemainingMah = 0.0f;
+    largeGaugeReconciliation = false;
+}
+
+void PackMonitor::resetGauge() {
+    capacityMah = (float) thresholds::usableCapacityMah;
+    chargeMah = 0.0f;
+    socInitialized = false;
+    lastCoulombMs = 0;
+    restoredIdleSinceMs = 0;
+    reconciliationPending = false;
+    correctionRemainingMah = 0.0f;
+    largeGaugeReconciliation = false;
+}
+
+void PackMonitor::setLearnedCapacity(uint16_t learnedCapacityMah, bool valid) {
+    float previousCapacityMah = capacityMah;
+    float previousFraction = previousCapacityMah > 0.0f
+        ? constrain(chargeMah / previousCapacityMah, 0.0f, 1.0f)
+        : 0.0f;
+    capacityMah = valid
+        ? constrain((float) learnedCapacityMah, 1600.0f, 4000.0f)
+        : (float) thresholds::usableCapacityMah;
+    if (socInitialized) {
+        chargeMah = previousFraction * capacityMah;
+    }
+}
+
+bool PackMonitor::consumeLargeGaugeReconciliation() {
+    bool value = largeGaugeReconciliation;
+    largeGaugeReconciliation = false;
+    return value;
+}
+
+bool PackMonitor::gaugeIsProvisional() const {
+    return reconciliationPending;
+}
+
+float PackMonitor::chargeMahValue() const {
+    return socInitialized ? chargeMah : ocvSocFraction(minCellMv()) * capacityMah;
+}
+
+uint16_t PackMonitor::effectiveCapacityMah() const {
+    return (uint16_t) lroundf(capacityMah);
 }
