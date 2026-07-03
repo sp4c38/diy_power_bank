@@ -1,1 +1,0 @@
-Flexing battery holders with integrated spring by enif on Thingiverse: https://www.thingiverse.com/thing:456900
