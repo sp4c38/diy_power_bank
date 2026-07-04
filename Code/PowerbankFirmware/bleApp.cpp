@@ -22,6 +22,11 @@ bool BLEApp::begin() {
         return false;
     }
 
+    // Internal-flash erase/program operations temporarily pause interrupts on
+    // the nRF52840. A longer supervision window keeps iOS connected while a
+    // LittleFS commit completes. Units are 10 ms.
+    BLE.setSupervisionTimeout(1200);
+
     service.addCharacteristic(telemetryCharacteristic);
     service.addCharacteristic(commandCharacteristic);
     service.addCharacteristic(commandResultCharacteristic);

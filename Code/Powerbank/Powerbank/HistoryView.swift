@@ -321,22 +321,22 @@ struct HistoryView: View {
 
 private enum HistoryRange: String, CaseIterable, Identifiable {
     case day
+    case threeDays
     case week
-    case month
 
     var id: String { rawValue }
     var title: String {
         switch self {
         case .day: "24h"
+        case .threeDays: "3d"
         case .week: "7d"
-        case .month: "30d"
         }
     }
     var interval: TimeInterval {
         switch self {
         case .day: 24 * 60 * 60
+        case .threeDays: 3 * 24 * 60 * 60
         case .week: 7 * 24 * 60 * 60
-        case .month: 30 * 24 * 60 * 60
         }
     }
 }

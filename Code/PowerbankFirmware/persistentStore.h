@@ -71,6 +71,7 @@ private:
     static constexpr uint32_t flashStart = 0x000E8000;
     static constexpr uint32_t flashSize = 0x00018000;
     static constexpr uint16_t historyCapacity = 2000;
+    static constexpr uint32_t flashWriteSpacingMs = 2000;
 
     FlashIAPBlockDevice blockDevice;
     mbed::LittleFileSystem fileSystem;
@@ -81,6 +82,7 @@ private:
     uint32_t nextSequence = 1;
     uint32_t lastCheckpointMs = 0;
     uint32_t lastHistoryMs = 0;
+    uint32_t lastFlashWriteMs = 0;
     uint32_t lastIdleDeltaSampleMs = 0;
     uint32_t lastHealthUpdateMs = 0;
     uint32_t syncedUnixTime = 0;
@@ -89,6 +91,7 @@ private:
     uint16_t lastHistoryFaults = 0;
     PackState lastHistoryState = PackState::Starting;
     bool hasHistoryBaseline = false;
+    bool stateCheckpointPending = false;
     bool lastChargeComplete = false;
     bool lastAtAnchor = false;
     float totalDischargedMah = 0.0f;

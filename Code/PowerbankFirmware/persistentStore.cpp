@@ -53,7 +53,9 @@ bool PersistentStore::begin(PackMonitor& monitor) {
     totalEnergyWh = (float) state.totalEnergyMilliWh / 1000.0f;
     calibrationDischargedMah = (float) state.calibrationDischargedMahTenths / 10.0f;
     scanHistory();
-    saveState(monitor, monitor.snapshot());
+    if (saveState(monitor, monitor.snapshot())) {
+        lastCheckpointMs = millis();
+    }
     Log.noticeln("Persistent storage ready; boot %lu; history %lu-%lu.",
         (unsigned long) state.bootId,
         (unsigned long) oldestSequence,
@@ -113,7 +115,8 @@ void PersistentStore::update(
         lastIdleDeltaSampleMs = nowMs;
     }
 
-    if (chargeComplete && !lastChargeComplete) {
+    bool calibrationStarted = chargeComplete && !lastChargeComplete;
+    if (calibrationStarted) {
         state.calibrationActive = 1;
         calibrationDischargedMah = 0.0f;
     }
@@ -146,22 +149,27 @@ void PersistentStore::update(
         monitor.setLearnedCapacity(thresholds::usableCapacityMah, false);
     }
 
-    bool historyWritten = false;
-    if (shouldRecordHistory(snapshot, telemetryFlags, nowMs)) {
-        historyWritten = appendHistory(monitor, snapshot, telemetryFlags);
-    }
-
     bool anchor = monitor.minCellMv() <= thresholds::outputOffMv ||
         monitor.maxCellMv() >= thresholds::chargeStopMv;
     bool anchorReached = anchor && !lastAtAnchor;
     lastAtAnchor = anchor;
-    bool stateChanged = !hasHistoryBaseline ||
-        snapshot.state != lastHistoryState ||
-        snapshot.faultFlags != lastHistoryFaults;
     bool checkpointDue = lastCheckpointMs == 0 || nowMs - lastCheckpointMs >= 900000UL;
-    if (checkpointDue || anchorReached || stateChanged || gaugeReconciled || completedCalibration || historyWritten) {
-        saveState(monitor, snapshot);
-        lastCheckpointMs = nowMs;
+    if (checkpointDue || anchorReached || calibrationStarted || gaugeReconciled || completedCalibration) {
+        stateCheckpointPending = true;
+    }
+
+    bool flashWriteReady = lastFlashWriteMs == 0 ||
+        nowMs - lastFlashWriteMs >= flashWriteSpacingMs;
+    bool historyWritten = false;
+    if (flashWriteReady && shouldRecordHistory(snapshot, telemetryFlags, nowMs)) {
+        historyWritten = appendHistory(monitor, snapshot, telemetryFlags);
+    }
+
+    if (stateCheckpointPending && flashWriteReady && !historyWritten) {
+        if (saveState(monitor, snapshot)) {
+            stateCheckpointPending = false;
+            lastCheckpointMs = nowMs;
+        }
     }
 }
 
@@ -317,12 +325,15 @@ bool PersistentStore::saveState(const PackMonitor& monitor, const PackSnapshot& 
         remove(temporaryStatePath);
         return false;
     }
-    int result = rename(temporaryStatePath, statePath);
-    if (result == 0) {
-        return true;
+    bool saved = rename(temporaryStatePath, statePath) == 0;
+    if (!saved) {
+        remove(statePath);
+        saved = rename(temporaryStatePath, statePath) == 0;
     }
-    remove(statePath);
-    return rename(temporaryStatePath, statePath) == 0;
+    if (saved) {
+        lastFlashWriteMs = millis();
+    }
+    return saved;
 }
 
 void PersistentStore::scanHistory() {
@@ -410,6 +421,7 @@ bool PersistentStore::appendHistory(
     lastHistoryFaults = snapshot.faultFlags;
     lastHistoryState = snapshot.state;
     hasHistoryBaseline = true;
+    lastFlashWriteMs = millis();
     return true;
 }
 

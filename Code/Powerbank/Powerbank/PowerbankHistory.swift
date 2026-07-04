@@ -369,7 +369,7 @@ final class HistoryStore: ObservableObject {
     }
 
     private func prune() {
-        let cutoff = Date().addingTimeInterval(-30 * 24 * 60 * 60)
+        let cutoff = Date().addingTimeInterval(-7 * 24 * 60 * 60)
         let descriptor = FetchDescriptor<HistorySample>()
         guard let samples = try? container.mainContext.fetch(descriptor) else { return }
         for sample in samples {
