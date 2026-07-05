@@ -28,6 +28,7 @@ public:
     void poll(CommandHandler handler);
     bool connected() const;
     void setCommandResult(const char* message);
+    void shutdown(unsigned long drainMs);
 
 private:
     TelemetryPayload buildPayload(
@@ -61,6 +62,7 @@ private:
     uint8_t historyChunkIndex = 0;
     bool historyRecordLoaded = false;
     unsigned long lastNotifyMs = 0;
+    unsigned long lastAdvertiseKickMs = 0;
 };
 
 #endif

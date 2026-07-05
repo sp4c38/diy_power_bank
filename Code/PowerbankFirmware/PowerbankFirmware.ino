@@ -8,6 +8,7 @@
 
 #include <ArduinoLog.h>
 #include <Wire.h>
+#include <mbed.h>
 
 #include "balancer.h"
 #include "bleApp.h"
@@ -40,6 +41,8 @@ void applyDecision(const PolicyDecision& decision);
 void setBqOffline(const char* reason);
 void logPeriodicStatus();
 uint16_t telemetryFlags();
+void maybeMaintenanceReboot();
+void enterSystemOff();
 
 void setup() {
     Serial.begin(9600);
@@ -54,17 +57,41 @@ void setup() {
     Wire.setClock(100000);
     pinMode(ALERT_PIN, INPUT);
 
+    // The Nano 33 BLE power LED hangs on a GPIO and the core lights it at boot;
+    // it costs about 1 mA around the clock, which the pack pays for. The RGB
+    // LED is active-low, so park those pins high to keep it dark.
+    pinMode(LED_PWR, OUTPUT);
+    digitalWrite(LED_PWR, LOW);
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
+    pinMode(LEDR, OUTPUT);
+    digitalWrite(LEDR, HIGH);
+    pinMode(LEDG, OUTPUT);
+    digitalWrite(LEDG, HIGH);
+    pinMode(LEDB, OUTPUT);
+    digitalWrite(LEDB, HIGH);
+
     Log.noticeln("\n************* The Last Minute Life Saver Power Bank *************");
     Log.noticeln("Firmware %s; BLE protocol %d", FIRMWARE_VERSION, BLE_PROTOCOL_VERSION);
     Log.noticeln("Type 'help' for serial commands.");
 
     bqOnline = initializeBq();
     persistentStore.begin(monitor);
+    persistentStore.restoreControls(controls);
+    if (controls.idleOutputOff) {
+        powerManager.restoreIdleElapsed(persistentStore.savedIdleElapsedSec());
+    }
     bleOnline = bleApp.begin();
     bleApp.attachStore(&persistentStore);
+
+    // Last line of defense against a hung loop or a wedged BLE stack. Started
+    // after the slow init work (flash mount can reformat) so it cannot bite
+    // during setup.
+    mbed::Watchdog::get_instance().start(thresholds::watchdogTimeoutMs);
 }
 
 void loop() {
+    mbed::Watchdog::get_instance().kick();
     serialConsole.poll(handleCommand, monitor, controls, bq);
     if (bleOnline) {
         bleApp.poll(handleCommand);
@@ -75,6 +102,15 @@ void loop() {
     uint16_t idleRemainingSec = powerManager.idleRemainingSec(monitor.snapshot(), controls);
     bool chargeComplete = controls.chargeLatchedOff &&
         monitor.maxCellMv() >= thresholds::chargeStopMv;
+    // Don't persist while the BQ is offline: setBqOffline() force-disables
+    // everything as an in-session fail-safe, and freezing that into flash
+    // would leave the output disabled across a recovery reboot.
+    if (bq.isOnline()) {
+        persistentStore.syncControls(controls);
+    }
+    persistentStore.setIdleElapsedSec(
+        controls.idleOutputOff ? powerManager.idleDurationMs() / 1000UL : 0
+    );
     persistentStore.update(monitor, monitor.snapshot(), telemetryFlags(), chargeComplete);
 
     if (bleOnline) {
@@ -91,6 +127,7 @@ void loop() {
         );
     }
 
+    maybeMaintenanceReboot();
     logPeriodicStatus();
     delay(250);
 }
@@ -128,8 +165,16 @@ void applyDecision(const PolicyDecision& decision) {
 
     if (decision.requestShip) {
         Log.warningln("Entering SHIP mode.");
+        persistentStore.checkpoint(monitor, snapshot);
         bq.enterShipMode();
         controls.shipRequested = false;
+        // The MCU is wired to the battery ahead of the BQ FETs, so SHIP alone
+        // would leave it draining the cells at milliamp level until they are
+        // deep-discharged. Take the MCU down with the BQ.
+        if (bleOnline) {
+            bleApp.shutdown(thresholds::bleShutdownDrainMs);
+        }
+        enterSystemOff();
         return;
     }
 
@@ -143,6 +188,15 @@ void applyDecision(const PolicyDecision& decision) {
         }
     }
     if (dsgOn != decision.allowDischarge) {
+        Log.noticeln(
+            "Discharge FET -> %s; state=%d faults=0x%X trusted=%T current=%d mA pack=%d mV",
+            decision.allowDischarge ? "ON" : "OFF",
+            (uint8_t) decision.state,
+            decision.faults,
+            snapshot.trusted,
+            snapshot.currentMa,
+            snapshot.packMv
+        );
         if (!bq.setDischargeEnabled(decision.allowDischarge)) {
             setBqOffline("Failed to update discharge FET.");
             return;
@@ -290,6 +344,40 @@ void setBqOffline(const char* reason) {
     controls.idleOutputOff = true;
     bqOnline = false;
     Log.errorln("%s", reason);
+}
+
+void maybeMaintenanceReboot() {
+    // Self-heal for a silently wedged BLE stack: restart once a day, but only
+    // when nothing would notice — no central connected, no current flowing, no
+    // balancing. Manual switch states and the very-long-idle ship countdown
+    // survive the restart via the persistent store, so a reboot can neither
+    // re-enable a switched-off output nor postpone SHIP.
+    if (millis() < thresholds::maintenanceRebootMs) {
+        return;
+    }
+    if (bleOnline && bleApp.connected()) {
+        return;
+    }
+    const PackSnapshot& snapshot = monitor.snapshot();
+    if (abs(snapshot.currentMa) > thresholds::idleCurrentMa || balancer.active()) {
+        return;
+    }
+    Log.warningln("Maintenance reboot to refresh the BLE stack.");
+    persistentStore.checkpoint(monitor, snapshot);
+    Serial.flush();
+    delay(100);
+    NVIC_SystemReset();
+}
+
+void enterSystemOff() {
+    Log.warningln("MCU entering deep sleep. Cycle the power switch to restart.");
+    Serial.flush();
+    delay(100);
+    NRF_POWER->SYSTEMOFF = 1;
+    // Not reached; if System OFF ever failed, the watchdog resets us instead.
+    while (true) {
+        delay(1000);
+    }
 }
 
 void logPeriodicStatus() {

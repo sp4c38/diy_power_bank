@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-const char FIRMWARE_VERSION[] = "0.3.0";
+const char FIRMWARE_VERSION[] = "0.4.0";
 const uint8_t BLE_PROTOCOL_VERSION = 3;
 
 const uint8_t I2C_BQ76920_ADDRESS = 0x08;
@@ -70,24 +70,33 @@ namespace thresholds {
     const uint16_t outputOffMv = 3100;
     const uint16_t criticalShipMv = 2850;
     const uint16_t hardwareOvMv = 4230;
-    const uint16_t hardwareUvMv = 2550;
+    const uint16_t hardwareUvMv = 2700;
 
     // Coulomb-counting state of charge. The usable capacity is the charge that
     // flows between the 0 % anchor (min cell at outputOffMv) and the 100 % anchor
     // (charge terminated at chargeStopMv). It is less than the NCR18650B's 3350 mAh
     // typical rating because the 4.15 V / 3.10 V window trims both ends of the cell
     // curve. 3S1P pack, so series count does not multiply capacity. Tunable.
-    const uint16_t usableCapacityMah = 3200;
+    const uint16_t usableCapacityMah = 3000;
 
     const uint16_t balanceMinCellMv = 4000;
-    const uint16_t balanceStartDeltaMv = 35;
-    const uint16_t balanceStopDeltaMv = 12;
+    const uint16_t balanceStartDeltaMv = 20;
+    const uint16_t balanceStopDeltaMv = 10;
     const unsigned long balanceMaxDurationMs = 30UL * 60UL * 1000UL;
 
     const int16_t idleCurrentMa = 20;
     const int16_t loadCurrentMa = -50;
     const unsigned long outputIdleTimeoutMs = 15UL * 60UL * 1000UL;
     const unsigned long veryLongIdleShipMs = 3UL * 24UL * 60UL * 60UL * 1000UL;
+
+    // Robustness: the Arduino is wired straight to the battery (not behind the
+    // BQ FETs), so BLE reachability and MCU shutdown are cell-protection issues.
+    const unsigned long advertiseKickIntervalMs = 5UL * 60UL * 1000UL;
+    const unsigned long bleShutdownDrainMs = 1000UL;
+    const uint32_t watchdogTimeoutMs = 16000UL;
+    // Self-heal reboot for a wedged BLE stack. Skipped while the very-long-idle
+    // ship countdown runs, so it cannot postpone SHIP indefinitely.
+    const unsigned long maintenanceRebootMs = 24UL * 60UL * 60UL * 1000UL;
 
     const uint16_t maxTrustedCellDeltaMv = 250;
     const uint16_t maxPackMismatchMv = 650;

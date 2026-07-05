@@ -110,7 +110,30 @@ void BLEApp::poll(CommandHandler handler) {
     if (isConnected != wasConnected) {
         wasConnected = isConnected;
         Log.noticeln(isConnected ? "BLE central connected." : "BLE central disconnected.");
+        if (!isConnected) {
+            BLE.advertise();
+            lastAdvertiseKickMs = millis();
+        }
     }
+
+    // Internal-flash writes pause interrupts, which can silently wedge the
+    // Cordio advertising schedule. Re-asserting advertising is harmless when
+    // it is already running and revives it when it died.
+    if (!isConnected && millis() - lastAdvertiseKickMs >= thresholds::advertiseKickIntervalMs) {
+        BLE.advertise();
+        lastAdvertiseKickMs = millis();
+    }
+}
+
+void BLEApp::shutdown(unsigned long drainMs) {
+    // Let pending notifications (e.g. a ship command result) reach the app
+    // before the radio goes down for good.
+    unsigned long start = millis();
+    while (millis() - start < drainMs) {
+        BLE.poll();
+        delay(10);
+    }
+    BLE.end();
 }
 
 void BLEApp::update(

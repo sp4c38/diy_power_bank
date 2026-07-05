@@ -8,6 +8,12 @@ static const char* statePath = "/pbank/state.bin";
 static const char* temporaryStatePath = "/pbank/state.tmp";
 static const char* historyPath = "/pbank/history.bin";
 
+// State.controlFlags bits.
+static const uint8_t controlDischargeManuallyOff = 1 << 0;
+static const uint8_t controlChargeManuallyOff = 1 << 1;
+static const uint8_t controlIdleOutputOff = 1 << 2;
+static const uint8_t controlChargeLatchedOff = 1 << 3;
+
 PersistentStore::PersistentStore():
     blockDevice(flashStart, flashSize),
     fileSystem("pbank", nullptr, 64, 64, 4096, 128) {
@@ -178,6 +184,59 @@ void PersistentStore::setTime(uint32_t unixTime, uint32_t uptimeSec) {
     syncedUptimeSec = uptimeSec;
 }
 
+void PersistentStore::restoreControls(ControlState& controls) const {
+    if (!mounted) {
+        return;
+    }
+    controls.dischargeManuallyDisabled = (state.controlFlags & controlDischargeManuallyOff) != 0;
+    controls.chargeManuallyDisabled = (state.controlFlags & controlChargeManuallyOff) != 0;
+    controls.idleOutputOff = (state.controlFlags & controlIdleOutputOff) != 0;
+    // The charge latch normally re-derives from voltage, but between the stop
+    // and resume thresholds it is hysteresis state — restoring it avoids a
+    // top-up micro-cycle after every maintenance reboot on the charger.
+    controls.chargeLatchedOff = (state.controlFlags & controlChargeLatchedOff) != 0;
+}
+
+void PersistentStore::syncControls(const ControlState& controls) {
+    uint8_t flags = 0;
+    if (controls.dischargeManuallyDisabled) {
+        flags |= controlDischargeManuallyOff;
+    }
+    if (controls.chargeManuallyDisabled) {
+        flags |= controlChargeManuallyOff;
+    }
+    if (controls.idleOutputOff) {
+        flags |= controlIdleOutputOff;
+    }
+    if (controls.chargeLatchedOff) {
+        flags |= controlChargeLatchedOff;
+    }
+    if (flags != state.controlFlags) {
+        state.controlFlags = flags;
+        stateCheckpointPending = true;
+    }
+}
+
+void PersistentStore::checkpoint(const PackMonitor& monitor, const PackSnapshot& snapshot) {
+    if (!mounted) {
+        return;
+    }
+    if (saveState(monitor, snapshot)) {
+        stateCheckpointPending = false;
+        lastCheckpointMs = millis();
+    }
+}
+
+void PersistentStore::setIdleElapsedSec(uint32_t seconds) {
+    // Updated silently: the value rides along with the next regular checkpoint
+    // instead of forcing flash writes of its own.
+    state.idleElapsedSec = seconds;
+}
+
+uint32_t PersistentStore::savedIdleElapsedSec() const {
+    return state.idleElapsedSec;
+}
+
 void PersistentStore::resetLearnedBattery(PackMonitor& monitor) {
     if (!mounted) {
         monitor.resetGauge();
@@ -273,22 +332,55 @@ bool PersistentStore::loadState() {
     if (file == nullptr) {
         return false;
     }
-    State candidate = {};
-    size_t count = fread(&candidate, sizeof(candidate), 1, file);
+    uint8_t buffer[sizeof(State)] = {};
+    size_t bytesRead = fread(buffer, 1, sizeof(buffer), file);
     fclose(file);
-    uint32_t storedChecksum = candidate.checksum;
-    candidate.checksum = 0;
-    bool valid = count == 1 &&
-        candidate.magic == stateMagic &&
-        candidate.version == stateVersion &&
-        candidate.size == sizeof(State) &&
-        storedChecksum == checksum(&candidate, sizeof(candidate));
-    if (!valid) {
-        return false;
+
+    if (bytesRead == sizeof(State)) {
+        State candidate = {};
+        memcpy(&candidate, buffer, sizeof(candidate));
+        uint32_t storedChecksum = candidate.checksum;
+        candidate.checksum = 0;
+        bool valid = candidate.magic == stateMagic &&
+            candidate.version == stateVersion &&
+            candidate.size == sizeof(State) &&
+            storedChecksum == checksum(&candidate, sizeof(candidate));
+        if (valid) {
+            candidate.checksum = storedChecksum;
+            state = candidate;
+            return true;
+        }
     }
-    candidate.checksum = storedChecksum;
-    state = candidate;
-    return true;
+
+    // v1 layout is v2 without idleElapsedSec (which sits right before the
+    // checksum), so a valid v1 blob migrates by copying the shared prefix.
+    constexpr size_t v1Size = sizeof(State) - sizeof(uint32_t);
+    constexpr size_t v1FieldBytes = v1Size - sizeof(uint32_t);
+    if (bytesRead >= v1Size) {
+        uint32_t v1Magic = 0;
+        uint16_t v1Version = 0;
+        uint16_t v1StructSize = 0;
+        memcpy(&v1Magic, buffer, sizeof(v1Magic));
+        memcpy(&v1Version, buffer + 4, sizeof(v1Version));
+        memcpy(&v1StructSize, buffer + 6, sizeof(v1StructSize));
+        if (v1Magic == stateMagic && v1Version == 1 && v1StructSize == v1Size) {
+            uint32_t storedChecksum = 0;
+            memcpy(&storedChecksum, buffer + v1FieldBytes, sizeof(storedChecksum));
+            uint8_t verify[v1Size] = {};
+            memcpy(verify, buffer, v1Size);
+            memset(verify + v1FieldBytes, 0, sizeof(uint32_t));
+            if (storedChecksum == checksum(verify, v1Size)) {
+                memset(&state, 0, sizeof(state));
+                memcpy(&state, buffer, v1FieldBytes);
+                state.version = stateVersion;
+                state.size = sizeof(State);
+                state.idleElapsedSec = 0;
+                Log.noticeln("Migrated persistent state v1 -> v2.");
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool PersistentStore::saveState(const PackMonitor& monitor, const PackSnapshot& snapshot) {

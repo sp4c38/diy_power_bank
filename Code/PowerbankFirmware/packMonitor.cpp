@@ -38,6 +38,8 @@ bool PackMonitor::update(Bq76920Driver& driver) {
         return false;
     }
 
+    bool wasTrusted = current.trusted;
+    uint8_t previousSysStat = current.sysStat;
     lastRaw = rawReading;
     PackSnapshot sample;
     sample.cell1Mv = driver.cellMvFromRaw(rawReading.vc1Raw);
@@ -53,6 +55,24 @@ bool PackMonitor::update(Bq76920Driver& driver) {
     sample.updatedAtMs = millis();
     sample.stale = false;
 
+    const uint8_t protectionMask = 0x3F; // XREADY, OVRD_ALERT, UV, OV, SCD, OCD.
+    uint8_t previousProtection = previousSysStat & protectionMask;
+    uint8_t currentProtection = sample.sysStat & protectionMask;
+    if (currentProtection != previousProtection) {
+        Log.warningln(
+            "BQ protection changed: 0x%X -> 0x%X; XREADY=%T OVRD=%T UV=%T OV=%T SCD=%T OCD=%T; current=%d mA",
+            previousProtection,
+            currentProtection,
+            (currentProtection & (1 << (uint8_t) SysStatusOpt::DEVICE_XREADY)) != 0,
+            (currentProtection & (1 << (uint8_t) SysStatusOpt::OVRD_ALERT)) != 0,
+            (currentProtection & (1 << (uint8_t) SysStatusOpt::UV)) != 0,
+            (currentProtection & (1 << (uint8_t) SysStatusOpt::OV)) != 0,
+            (currentProtection & (1 << (uint8_t) SysStatusOpt::SCD)) != 0,
+            (currentProtection & (1 << (uint8_t) SysStatusOpt::OCD)) != 0,
+            sample.currentMa
+        );
+    }
+
     bool trusted = evaluateTrust(sample);
     pushSample(sample);
     current = buildFilteredSnapshot(sample);
@@ -61,6 +81,21 @@ bool PackMonitor::update(Bq76920Driver& driver) {
     current.faultFlags = deriveFaults(current, current.trusted);
     if (current.faultFlags & FAULT_SENSOR) {
         current.state = PackState::SensorFault;
+    }
+    if (wasTrusted && !current.trusted) {
+        Log.warningln(
+            "Measurements became untrusted; score=%d consecutive=%d faults=0x%X SYS_STAT=0x%X",
+            instabilityScore,
+            trustedConsecutiveSamples,
+            current.faultFlags,
+            current.sysStat
+        );
+    } else if (!wasTrusted && current.trusted) {
+        Log.noticeln(
+            "Measurements trusted again after %d consecutive samples; score=%d",
+            trustedConsecutiveSamples,
+            instabilityScore
+        );
     }
     updateStateOfCharge(current);
     return true;
@@ -185,25 +220,65 @@ bool PackMonitor::evaluateTrust(const PackSnapshot& sample) {
     uint16_t maxCell = max(sample.cell1Mv, max(sample.cell2Mv, sample.cell5Mv));
     uint32_t summedCells = (uint32_t) sample.cell1Mv + sample.cell2Mv + sample.cell5Mv;
     uint16_t packMismatch = summedCells > sample.packMv ? summedCells - sample.packMv : sample.packMv - summedCells;
-    bool plausible = minCell >= 2400 && maxCell <= 4300 && packMismatch <= thresholds::maxPackMismatchMv;
+    bool cellOutOfRange = minCell < 2400 || maxCell > 4300;
+    bool packMismatchBad = packMismatch > thresholds::maxPackMismatchMv;
+    bool plausible = !cellOutOfRange && !packMismatchBad;
     bool hugeCellDelta = (maxCell - minCell) > thresholds::maxTrustedCellDeltaMv && abs(sample.currentMa) <= thresholds::idleCurrentMa;
     bool idleJump = false;
+    bool currentSampleIdle = abs(sample.currentMa) <= thresholds::idleCurrentMa;
+    bool previousSampleIdle = hasPreviousSample &&
+        abs(previousSample.currentMa) <= thresholds::idleCurrentMa;
+    uint16_t jump1 = 0;
+    uint16_t jump2 = 0;
+    uint16_t jump5 = 0;
+    uint16_t jumpPack = 0;
 
-    if (hasPreviousSample && abs(sample.currentMa) <= thresholds::idleCurrentMa) {
-        uint16_t jump1 = abs((int) sample.cell1Mv - (int) previousSample.cell1Mv);
-        uint16_t jump2 = abs((int) sample.cell2Mv - (int) previousSample.cell2Mv);
-        uint16_t jump5 = abs((int) sample.cell5Mv - (int) previousSample.cell5Mv);
-        uint16_t jumpPack = abs((int) sample.packMv - (int) previousSample.packMv);
+    if (previousSampleIdle && currentSampleIdle) {
+        jump1 = abs((int) sample.cell1Mv - (int) previousSample.cell1Mv);
+        jump2 = abs((int) sample.cell2Mv - (int) previousSample.cell2Mv);
+        jump5 = abs((int) sample.cell5Mv - (int) previousSample.cell5Mv);
+        jumpPack = abs((int) sample.packMv - (int) previousSample.packMv);
         idleJump = jump1 > thresholds::maxIdleSampleJumpMv ||
             jump2 > thresholds::maxIdleSampleJumpMv ||
             jump5 > thresholds::maxIdleSampleJumpMv ||
             jumpPack > (thresholds::maxIdleSampleJumpMv * 2);
     }
 
+    bool sampleFailed = !plausible || hugeCellDelta || idleJump;
+    if (sampleFailed) {
+        Log.warningln(
+            "Trust sample failed: cellRange=%T packMismatch=%T cellDelta=%T idleJump=%T; cells=%d/%d/%d mV pack=%d mV current=%d mA",
+            cellOutOfRange,
+            packMismatchBad,
+            hugeCellDelta,
+            idleJump,
+            sample.cell1Mv,
+            sample.cell2Mv,
+            sample.cell5Mv,
+            sample.packMv,
+            sample.currentMa
+        );
+        Log.warningln(
+            "Trust details: mismatch=%d mV delta=%d mV jumps=%d/%d/%d mV packJump=%d mV; raw VC1=%d VC2=%d VC5=%d BAT=%d CC=%d SYS_STAT=0x%X",
+            packMismatch,
+            maxCell - minCell,
+            jump1,
+            jump2,
+            jump5,
+            jumpPack,
+            lastRaw.vc1Raw,
+            lastRaw.vc2Raw,
+            lastRaw.vc5Raw,
+            lastRaw.batRaw,
+            lastRaw.ccRaw,
+            lastRaw.sysStat
+        );
+    }
+
     previousSample = sample;
     hasPreviousSample = true;
 
-    if (!plausible || hugeCellDelta || idleJump) {
+    if (sampleFailed) {
         if (instabilityScore < 10) {
             instabilityScore += 2;
         }

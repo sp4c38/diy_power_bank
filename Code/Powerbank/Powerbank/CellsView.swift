@@ -42,13 +42,33 @@ struct CellsView: View {
                 summaryItem("Rate", Format.current(t.currentMa), Theme.flowColor(t.flow))
             }
 
-            if let hours = t.runtimeHours {
-                let charging = t.flow == .charging
+            if t.chargeComplete, t.flow != .discharging {
                 StatusPill(
-                    text: charging ? "~\(Format.duration(hours)) to full" : "~\(Format.duration(hours)) to empty",
-                    systemImage: charging ? "clock.badge.checkmark" : "hourglass",
-                    tint: Theme.flowColor(t.flow)
+                    text: "Fully charged",
+                    systemImage: "checkmark.circle.fill",
+                    tint: .green
                 )
+            } else if let estimate = ble.runtimeEstimate {
+                switch estimate {
+                case .toFull(let hours):
+                    StatusPill(
+                        text: "~\(Format.eta(hours)) to full",
+                        systemImage: "clock.badge.checkmark",
+                        tint: Theme.flowColor(.charging)
+                    )
+                case .finishingCharge(let minutes):
+                    StatusPill(
+                        text: "Finishing charge · ~\(minutes) min",
+                        systemImage: "battery.100percent.bolt",
+                        tint: Theme.flowColor(.charging)
+                    )
+                case .toEmpty(let hours):
+                    StatusPill(
+                        text: "~\(Format.eta(hours)) to empty",
+                        systemImage: "hourglass",
+                        tint: Theme.flowColor(.discharging)
+                    )
+                }
             }
 
             Divider()

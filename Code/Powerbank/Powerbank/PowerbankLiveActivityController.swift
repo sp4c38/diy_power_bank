@@ -12,14 +12,16 @@ final class PowerbankLiveActivityController {
     private var lastPublishedAt: Date?
     private var lastPublishedSoc: Int?
     private var lastPublishedStatus: String?
+    private var etaMinutes: Int?
 
     init() {
         activity = Activity<PowerbankActivityAttributes>.activities.first
     }
 
-    func process(_ telemetry: Telemetry, enabled: Bool, deviceName: String) {
+    func process(_ telemetry: Telemetry, etaMinutes: Int?, enabled: Bool, deviceName: String) {
         disconnectTask?.cancel()
         disconnectTask = nil
+        self.etaMinutes = etaMinutes
 
         guard enabled else {
             end()
@@ -55,6 +57,7 @@ final class PowerbankLiveActivityController {
     func disconnected(lastTelemetry: Telemetry?) {
         activeFlowStartedAt = nil
         idleStartedAt = nil
+        etaMinutes = nil
         if let lastTelemetry {
             update(with: lastTelemetry, stale: true)
         }
@@ -111,7 +114,6 @@ final class PowerbankLiveActivityController {
     }
 
     private func content(for telemetry: Telemetry, stale: Bool) -> ActivityContent<PowerbankActivityAttributes.ContentState> {
-        let etaMinutes = telemetry.runtimeHours.map { max(0, Int(($0 * 60).rounded())) }
         let state = PowerbankActivityAttributes.ContentState(
             socPercent: Int(telemetry.socPercent),
             status: stale ? "Disconnected" : telemetry.state.title,
@@ -136,7 +138,7 @@ final class PowerbankLiveActivityController {
 #else
 @MainActor
 final class PowerbankLiveActivityController {
-    func process(_ telemetry: Telemetry, enabled: Bool, deviceName: String) {}
+    func process(_ telemetry: Telemetry, etaMinutes: Int?, enabled: Bool, deviceName: String) {}
     func disconnected(lastTelemetry: Telemetry?) {}
 }
 #endif

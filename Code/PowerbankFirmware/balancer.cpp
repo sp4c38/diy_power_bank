@@ -14,6 +14,10 @@ bool Balancer::update(Bq76920Driver& driver, const PackSnapshot& snapshot, bool 
         return stop(driver);
     }
 
+    if (timeoutLatched) {
+        return stop(driver);
+    }
+
     if (activeMask != 0) {
         if (delta <= thresholds::balanceStopDeltaMv) {
             return stop(driver);

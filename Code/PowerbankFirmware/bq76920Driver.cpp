@@ -6,9 +6,10 @@
 bool Bq76920Driver::begin() {
     online = false;
     cachedSysCtrl1 = (1 << (uint8_t) SysControlOpt::ADC_EN);
-    cachedSysCtrl2 = (1 << (uint8_t) SysControlOpt::CC_EN) |
-        (1 << (uint8_t) SysControlOpt::DSG_ON) |
-        (1 << (uint8_t) SysControlOpt::CHG_ON);
+    // FETs stay off at init; the safety policy enables them once readings are
+    // trusted. Otherwise every reboot would briefly power the output even when
+    // it was manually or automatically switched off before the restart.
+    cachedSysCtrl2 = (1 << (uint8_t) SysControlOpt::CC_EN);
     cachedCellBal = 0;
 
     if (!writeRegister(I2C_BQ76920_ADDRESS, registerMap::CC_CFG, 0x19)) {
@@ -68,16 +69,32 @@ bool Bq76920Driver::readOffsetAndGain() {
 
 bool Bq76920Driver::pushProtection() {
     uint8_t protect1Config = 0b00011111; // SCD: 400 us, 100 mV => about 12.5 A at 8 mOhm.
-    uint8_t protect2Config = 0b01000011; // OCD: 160 ms, 17 mV => about 2.125 A.
+    uint8_t protect2Config = 0b01000111; // OCD: 160 ms, 28 mV => about 3.5 A.
     uint8_t protect3Config = 0b01010000; // UV delay 4s, OV delay 2s.
     uint8_t ovTripConfig = ((((unsigned long) thresholds::hardwareOvMv - adcOffsetUv) * 1000 / adcGainUvPerLsb) >> 4) & 0xFF;
     uint8_t uvTripConfig = ((((unsigned long) thresholds::hardwareUvMv - adcOffsetUv) * 1000 / adcGainUvPerLsb) >> 4) & 0xFF;
 
-    return writeRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT1, protect1Config) &&
+    bool written = writeRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT1, protect1Config) &&
         writeRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT2, protect2Config) &&
         writeRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT3, protect3Config) &&
         writeRegister(I2C_BQ76920_ADDRESS, registerMap::OV_TRIP, ovTripConfig) &&
         writeRegister(I2C_BQ76920_ADDRESS, registerMap::UV_TRIP, uvTripConfig);
+    if (!written) {
+        return false;
+    }
+
+    uint8_t protect2Readback = 0;
+    if (!readRegister(I2C_BQ76920_ADDRESS, registerMap::PROTECT2, &protect2Readback)) {
+        Log.errorln("PROTECT2 readback failed.");
+        return false;
+    }
+    if (protect2Readback != protect2Config) {
+        Log.errorln("PROTECT2 verification failed: wrote %X, read %X.", protect2Config, protect2Readback);
+        return false;
+    }
+
+    Log.noticeln("BQ protection configured: PROTECT2=%X; OCD=3500 mA; delay=160 ms.", protect2Readback);
+    return true;
 }
 
 bool Bq76920Driver::pushControl() {

@@ -51,7 +51,7 @@ enum PackState: UInt8, CaseIterable {
         case .outputOffIdle: "Output disabled after a period of idle."
         case .fault: "A protection fault is active."
         case .sensorFault: "Measurements can't be trusted right now."
-        case .ship: "Deep sleep. Reconnect power to wake."
+        case .ship: "Deep sleep. Cycle the power switch and press the boot button to wake."
         case .bqOffline: "Lost contact with the battery monitor."
         }
     }
@@ -158,7 +158,7 @@ struct Telemetry: Equatable {
     // MARK: - State-of-charge context
     // Constants mirror the firmware coulomb counter (register.h): the usable
     // window is bounded by the empty (min cell) and full (max cell) anchors.
-    static let usableCapacityMah: Double = 3200   // NCR18650B, 4.15 V / 3.10 V window
+    static let usableCapacityMah: Double = 3000   // NCR18650B, 4.15 V / 3.10 V window
     static let emptyAnchorMv: UInt16 = 3100       // outputOffMv  → 0 %
     static let fullAnchorMv: UInt16 = 4150        // chargeStopMv → 100 %
 
@@ -169,18 +169,6 @@ struct Telemetry: Equatable {
         return Double(socPercent) / 100.0 * Telemetry.usableCapacityMah
     }
     var energyRemainingWh: Double { chargeRemainingMah / 1000.0 * packVoltage }
-
-    /// Estimated runtime at the present current: time to full while charging,
-    /// time to empty while discharging. `nil` when idle (no meaningful rate).
-    var runtimeHours: Double? {
-        let amps = abs(Double(currentMa)) / 1000.0
-        guard amps > 0.02 else { return nil }
-        switch flow {
-        case .charging: return (Telemetry.usableCapacityMah - chargeRemainingMah) / 1000.0 / amps
-        case .discharging: return chargeRemainingMah / 1000.0 / amps
-        case .idle: return nil
-        }
-    }
 
     /// What the resting open-circuit voltage alone would estimate (the firmware's
     /// OCV seed table, on the min cell). Useful as a sanity check against the
@@ -385,7 +373,7 @@ enum PowerbankCommand: UInt8, CaseIterable, Identifiable {
         case .outputOn: "Enable the normal discharge path to the output."
         case .outputOff: "Cut the output until you turn it back on."
         case .clearFaults: "Clear UV, OV, short-circuit and overcurrent latches."
-        case .ship: "Enter deep sleep. Needs charger to wake."
+        case .ship: "Enter deep sleep. Wake with the power switch and boot button."
         case .balanceOff: "Force all passive cell balancing off."
         case .chargeOn: "Developer override: allow the charge FET."
         case .chargeOff: "Developer override: block the charge FET."
@@ -414,6 +402,101 @@ enum PowerbankCommand: UInt8, CaseIterable, Identifiable {
         default:
             false
         }
+    }
+}
+
+/// Time-remaining estimate derived from the coulomb counter's recent trend.
+enum RuntimeEstimate: Equatable {
+    case toFull(hours: Double)
+    /// Constant-voltage taper near full: current keeps falling, so a linear
+    /// extrapolation is unreliable. Reported as a bounded minute count instead.
+    case finishingCharge(minutes: Int)
+    case toEmpty(hours: Double)
+}
+
+/// Estimates time to full/empty from the slope of the firmware's coulomb count
+/// (`chargeMahTenths`) over the last few minutes, instead of dividing by the
+/// instantaneous current. The coulomb count is already median-filtered on the
+/// firmware side and naturally tracks the charger's CV taper.
+final class RuntimeEstimator {
+    private struct Sample {
+        let time: Date
+        let chargeMah: Double
+    }
+
+    private var samples: [Sample] = []
+    private var lastFlow: PowerFlow = .idle
+
+    /// Trend window and the minimum span it must cover before we trust it.
+    private let windowSec: TimeInterval = 5 * 60
+    private let minimumSpanSec: TimeInterval = 2 * 60
+    /// Telemetry arrives several times a second; one sample every few seconds
+    /// is plenty for a minutes-scale trend.
+    private let decimationSec: TimeInterval = 5
+    /// Max cell voltage above which the charger is in its CV taper phase.
+    private let taperThresholdMv: UInt16 = 4050
+    /// Rates below this (mAh/h) are noise, not a usable trend.
+    private let minimumRateMahPerHour: Double = 25
+
+    func update(with telemetry: Telemetry, capacityMah: Double) -> RuntimeEstimate? {
+        let flow = telemetry.flow
+        if flow != lastFlow {
+            samples.removeAll()
+            lastFlow = flow
+        }
+        guard flow != .idle else { return nil }
+
+        let now = telemetry.receivedAt
+        if let last = samples.last, now.timeIntervalSince(last.time) > 30 {
+            // Telemetry dropout; the old points no longer describe one trend.
+            samples.removeAll()
+        }
+        if samples.last.map({ now.timeIntervalSince($0.time) >= decimationSec }) ?? true {
+            samples.append(Sample(time: now, chargeMah: telemetry.chargeRemainingMah))
+        }
+        samples.removeAll { now.timeIntervalSince($0.time) > windowSec }
+
+        guard let first = samples.first, let latest = samples.last,
+              latest.time.timeIntervalSince(first.time) >= minimumSpanSec,
+              samples.count >= 10 else { return nil }
+
+        guard let slopeMahPerHour = Self.slopeMahPerHour(samples) else { return nil }
+
+        switch flow {
+        case .charging:
+            guard !telemetry.chargeComplete else { return nil }
+            let remainingMah = max(0, capacityMah - latest.chargeMah)
+            let inTaper = telemetry.maxCellMv >= taperThresholdMv
+            guard slopeMahPerHour > minimumRateMahPerHour else {
+                return inTaper ? .finishingCharge(minutes: 30) : nil
+            }
+            let hours = remainingMah / slopeMahPerHour
+            if inTaper {
+                return .finishingCharge(minutes: min(45, max(5, Int((hours * 60).rounded()))))
+            }
+            return .toFull(hours: hours)
+        case .discharging:
+            let rate = -slopeMahPerHour
+            guard rate > minimumRateMahPerHour else { return nil }
+            return .toEmpty(hours: latest.chargeMah / rate)
+        case .idle:
+            return nil
+        }
+    }
+
+    /// Least-squares slope of charge over time, in mAh per hour.
+    private static func slopeMahPerHour(_ samples: [Sample]) -> Double? {
+        guard let t0 = samples.first?.time else { return nil }
+        let xs = samples.map { $0.time.timeIntervalSince(t0) / 3600 }
+        let ys = samples.map(\.chargeMah)
+        let n = Double(samples.count)
+        let sumX = xs.reduce(0, +)
+        let sumY = ys.reduce(0, +)
+        let sumXY = zip(xs, ys).map(*).reduce(0, +)
+        let sumXX = xs.map { $0 * $0 }.reduce(0, +)
+        let denominator = n * sumXX - sumX * sumX
+        guard denominator > 0 else { return nil }
+        return (n * sumXY - sumX * sumY) / denominator
     }
 }
 

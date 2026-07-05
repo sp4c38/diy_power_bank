@@ -14,6 +14,7 @@ final class PowerbankBLEManager: NSObject, ObservableObject {
     @Published var now = Date()
     @Published var batteryHealth: BatteryHealth?
     @Published var historyStatus: HistoryStatus?
+    @Published private(set) var runtimeEstimate: RuntimeEstimate?
 
     private let serviceUUID = CBUUID(string: "7E571000-40A1-4E31-8E9D-4AC0D8B2A100")
     private let telemetryUUID = CBUUID(string: "7E571001-40A1-4E31-8E9D-4AC0D8B2A100")
@@ -41,10 +42,19 @@ final class PowerbankBLEManager: NSObject, ObservableObject {
     private let historyStore: HistoryStore
     private let alertManager: PowerbankAlertManager
     private let liveActivityController: PowerbankLiveActivityController
+    private let runtimeEstimator = RuntimeEstimator()
 
     /// When the user explicitly disconnects we stop auto-reconnecting until they
     /// ask us to scan again.
     private var autoReconnect = true
+
+    /// State restoration hands us a peripheral before the central is powered
+    /// on; issuing connect/discover calls at that point silently fails, which
+    /// used to leave a "connected" app without a command characteristic (all
+    /// command buttons gray until an app restart).
+    private var restoredPeripheralPending = false
+    private var lastDiscoveryRetry = Date.distantPast
+    private var discoveryRetryCount = 0
 
     init(
         historyStore: HistoryStore,
@@ -64,6 +74,7 @@ final class PowerbankBLEManager: NSObject, ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 self?.now = Date()
                 self?.refreshSignal()
+                self?.ensureCharacteristicsDiscovered()
             }
         }
     }
@@ -87,6 +98,15 @@ final class PowerbankBLEManager: NSObject, ObservableObject {
     }
 
     var alerts: PowerbankAlertManager { alertManager }
+
+    /// Capacity for time estimates: the learned value once the firmware has
+    /// measured one, the design constant until then.
+    var effectiveCapacityMah: Double {
+        if let health = batteryHealth, health.isLearned {
+            return Double(health.learnedCapacityMah)
+        }
+        return Telemetry.usableCapacityMah
+    }
 
     // MARK: - User actions
 
@@ -148,6 +168,36 @@ final class PowerbankBLEManager: NSObject, ObservableObject {
     private func refreshSignal() {
         guard connectionState.isConnected else { return }
         peripheral?.readRSSI()
+    }
+
+    /// Self-heal: connected but no command characteristic means discovery was
+    /// skipped or failed (e.g. around state restoration). Re-run it instead of
+    /// staying in a half-connected state where every command button is dead.
+    private func ensureCharacteristicsDiscovered() {
+        guard connectionState.isConnected,
+              commandCharacteristic == nil,
+              let peripheral,
+              peripheral.state == .connected,
+              Date().timeIntervalSince(lastDiscoveryRetry) >= 5 else { return }
+        lastDiscoveryRetry = Date()
+        if discoveryRetryCount == 0 {
+            appendEvent("Commands unavailable; re-discovering services")
+        }
+        discoveryRetryCount += 1
+        peripheral.discoverServices([serviceUUID])
+    }
+
+    /// Completes a state-restored connection once the central is powered on —
+    /// the earliest moment connect/discover calls are actually accepted.
+    private func resumeRestoredPeripheral() {
+        guard restoredPeripheralPending, let peripheral else { return }
+        restoredPeripheralPending = false
+        if peripheral.state == .connected {
+            peripheral.discoverServices([serviceUUID])
+        } else {
+            connectionState = .connecting(peripheral.name ?? "Powerbank")
+            central.connect(peripheral)
+        }
     }
 
     private func appendEvent(_ text: String, isError: Bool = false) {
@@ -219,6 +269,17 @@ final class PowerbankBLEManager: NSObject, ObservableObject {
         historyChunkData.removeAll(keepingCapacity: true)
     }
 
+    private static func etaMinutes(_ estimate: RuntimeEstimate?) -> Int? {
+        switch estimate {
+        case .toFull(let hours), .toEmpty(let hours):
+            return min(240, max(0, Int((hours * 60).rounded())))
+        case .finishingCharge(let minutes):
+            return minutes
+        case nil:
+            return nil
+        }
+    }
+
     private static func bluetoothReason(_ state: CBManagerState) -> String {
         switch state {
         case .unknown: "state unknown"
@@ -240,21 +301,21 @@ extension PowerbankBLEManager: CBCentralManagerDelegate {
             self.peripheral = restored
             restored.delegate = self
             let name = restored.name ?? "Powerbank"
-            if restored.state == .connected {
-                self.connectionState = .connected(name)
-                restored.discoverServices([self.serviceUUID])
-            } else {
-                self.connectionState = .connecting(name)
-                self.central.connect(restored)
-            }
+            self.connectionState = restored.state == .connected ? .connected(name) : .connecting(name)
+            self.restoredPeripheralPending = true
             self.appendEvent("Restored Bluetooth connection")
+            if self.central.state == .poweredOn {
+                self.resumeRestoredPeripheral()
+            }
         }
     }
 
     nonisolated func centralManagerDidUpdateState(_ central: CBCentralManager) {
         Task { @MainActor in
             if central.state == .poweredOn {
-                if self.autoReconnect {
+                if self.restoredPeripheralPending {
+                    self.resumeRestoredPeripheral()
+                } else if self.autoReconnect {
                     self.startScanning()
                 }
             } else {
@@ -281,6 +342,8 @@ extension PowerbankBLEManager: CBCentralManagerDelegate {
         Task { @MainActor in
             let name = peripheral.name ?? "Powerbank"
             self.connectionState = .connected(name)
+            self.discoveryRetryCount = 0
+            self.lastDiscoveryRetry = .distantPast
             self.appendEvent("Connected to \(name)")
             peripheral.readRSSI()
             peripheral.discoverServices([self.serviceUUID])
@@ -299,6 +362,10 @@ extension PowerbankBLEManager: CBCentralManagerDelegate {
             self.historyChunkSequence = nil
             self.historyChunkData.removeAll(keepingCapacity: true)
             self.rssi = nil
+            self.runtimeEstimate = nil
+            self.restoredPeripheralPending = false
+            self.discoveryRetryCount = 0
+            self.lastDiscoveryRetry = .distantPast
             self.liveActivityController.disconnected(lastTelemetry: self.telemetry)
             self.appendEvent(error.map { "Disconnected: \($0.localizedDescription)" } ?? "Disconnected", isError: error != nil)
             if self.autoReconnect {
@@ -406,8 +473,13 @@ extension PowerbankBLEManager: CBPeripheralDelegate {
                         )
                     }
                     self.alertManager.process(parsed)
+                    self.runtimeEstimate = self.runtimeEstimator.update(
+                        with: parsed,
+                        capacityMah: self.effectiveCapacityMah
+                    )
                     self.liveActivityController.process(
                         parsed,
+                        etaMinutes: Self.etaMinutes(self.runtimeEstimate),
                         enabled: self.alertManager.liveActivitiesEnabled,
                         deviceName: self.peripheral?.name ?? "Powerbank"
                     )

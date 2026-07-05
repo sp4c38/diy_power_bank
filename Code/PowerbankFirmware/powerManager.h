@@ -14,9 +14,13 @@ public:
     unsigned long idleDurationMs() const;
     uint16_t idleRemainingSec(const PackSnapshot& snapshot, const ControlState& controls) const;
     bool automaticShutdownOccurred() const;
+    /// Continue an idle stretch that was running before a reboot, so the
+    /// very-long-idle ship countdown survives maintenance restarts.
+    void restoreIdleElapsed(uint32_t seconds);
 
 private:
     unsigned long lastActivityMs = 0;
+    unsigned long idleCarryMs = 0;
     bool automaticShutdown = false;
 };
 

@@ -67,6 +67,16 @@ enum Format {
         String(format: "%.1f °C", c)
     }
 
+    /// ETA display: rounded to 5 minutes, capped at "4h+" — a battery estimate
+    /// pretending to know the minute would be lying.
+    static func eta(_ hours: Double) -> String {
+        if hours >= 4 { return "4h+" }
+        let minutes = max(5, Int((hours * 60 / 5).rounded()) * 5)
+        let h = minutes / 60
+        let m = minutes % 60
+        return h > 0 ? "\(h)h \(m)m" : "\(m)m"
+    }
+
     static func duration(_ hours: Double) -> String {
         let totalMinutes = max(0, Int((hours * 60).rounded()))
         let h = totalMinutes / 60

@@ -7,6 +7,7 @@
 
 #include "packMonitor.h"
 #include "register.h"
+#include "safetyPolicy.h"
 
 class PersistentStore {
 public:
@@ -17,6 +18,11 @@ public:
     void update(PackMonitor& monitor, const PackSnapshot& snapshot, uint16_t telemetryFlags, bool chargeComplete);
     void setTime(uint32_t unixTime, uint32_t uptimeSec);
     void resetLearnedBattery(PackMonitor& monitor);
+    void restoreControls(ControlState& controls) const;
+    void syncControls(const ControlState& controls);
+    void checkpoint(const PackMonitor& monitor, const PackSnapshot& snapshot);
+    void setIdleElapsedSec(uint32_t seconds);
+    uint32_t savedIdleElapsedSec() const;
 
     HealthPayload healthPayload() const;
     uint32_t bootId() const;
@@ -34,7 +40,7 @@ private:
         uint8_t gaugeValid;
         uint8_t learnedCapacityValid;
         uint8_t calibrationActive;
-        uint8_t reserved;
+        uint8_t controlFlags; // manual/idle output switches, survive reboots
         uint16_t chargeMahTenths;
         uint16_t learnedCapacityMah;
         uint16_t lastCell1Mv;
@@ -49,6 +55,7 @@ private:
         uint16_t maximumIdleDeltaMv;
         uint64_t idleDeltaTotalMv;
         uint32_t idleDeltaSamples;
+        uint32_t idleElapsedSec; // added in v2: ship countdown survives reboots
         uint32_t checksum;
     };
 
@@ -67,7 +74,7 @@ private:
     static uint32_t checksum(const void* bytes, size_t length);
 
     static constexpr uint32_t stateMagic = 0x50425733; // "PBW3"
-    static constexpr uint16_t stateVersion = 1;
+    static constexpr uint16_t stateVersion = 2;
     static constexpr uint32_t flashStart = 0x000E8000;
     static constexpr uint32_t flashSize = 0x00018000;
     static constexpr uint16_t historyCapacity = 2000;
