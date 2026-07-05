@@ -2,7 +2,7 @@
 
 This repository contains the project files for my custom power bank, including the PCB design and fabrication files, firmware, iOS app, and 3D-printable enclosure parts.
 
-It is mainly provided as an archive for anyone interested in the files or who wants to learn from the project. It is not a complete step-by-step build guide.
+The files are provided for anyone interested in the project or who wants to learn from it. This is not a complete step-by-step build guide.
 
 [Project showcase](https://www.space8.me/custom-power-bank.html)
 
