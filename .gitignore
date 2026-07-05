@@ -118,3 +118,12 @@ Powerbank-backups/
 *.backup/**
 *.bak/**
 .backup/**
+
+### Personal and machine-specific files
+# Purchase records contain names, addresses, and order numbers.
+NCR18650B Invoice Akkushop.pdf
+Circuit/Orders/
+
+# Xcode per-user workspace state.
+**/xcuserdata/
+*.xcuserstate
