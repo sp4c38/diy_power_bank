@@ -427,7 +427,7 @@ struct SessionDetailView: View {
         ScrollView {
             VStack(spacing: 16) {
                 summaryCard
-                chartCard("Current", systemImage: "bolt.fill") {
+                chartCard("Current & Pack Voltage", systemImage: "bolt.fill") {
                     currentChart
                 }
                 chartCard("Cell Voltages", systemImage: "battery.100percent") {
@@ -468,27 +468,108 @@ struct SessionDetailView: View {
         mah >= 1000 ? String(format: "%.2f Ah", mah / 1000) : String(format: "%.0f mAh", mah)
     }
 
-    /// For a charge session this is the CC/CV curve: the constant-current
-    /// plateau followed by the taper as the cells approach the stop voltage.
+    /// The CC/CV view in one chart: current on the leading axis, pack voltage
+    /// mapped into the same plot with its own trailing axis. For a charge
+    /// session this shows the constant-current plateau, the rising pack
+    /// voltage, and the taper once the cells approach the stop voltage.
     private var currentChart: some View {
-        Chart {
-            ForEach(points(\.currentMa)) { point in
+        let model = currentVoltageModel
+        return Chart {
+            ForEach(model.current) { point in
                 LineMark(
                     x: .value("Time", point.date),
                     y: .value("Current", point.value),
                     series: .value("Segment", point.segmentKey)
                 )
-                .foregroundStyle(Theme.flowColor(session.flow))
+                .foregroundStyle(by: .value("Series", point.series))
+                .interpolationMethod(.monotone)
+            }
+            ForEach(model.pack) { point in
+                LineMark(
+                    x: .value("Time", point.date),
+                    y: .value("Voltage", point.value),
+                    series: .value("Segment", point.segmentKey)
+                )
+                .foregroundStyle(by: .value("Series", point.series))
                 .interpolationMethod(.monotone)
             }
             if let selectedDate, let sample = nearestSample(to: selectedDate) {
-                scrubber(at: selectedDate, label: "\(sample.currentMa) mA")
+                scrubber(
+                    at: selectedDate,
+                    label: String(format: "%d mA · %.2f V", sample.currentMa, Double(sample.packMv) / 1000)
+                )
             }
         }
         .chartXSelection(value: $selectedDate)
+        .chartForegroundStyleScale([
+            "Current": Theme.flowColor(session.flow),
+            "Pack Voltage": Color.purple,
+        ])
         .chartXScale(domain: session.start...session.end)
-        .chartYAxisLabel("mA")
-        .frame(height: 200)
+        .chartYScale(domain: model.currentLow...model.currentHigh)
+        .chartYAxis {
+            AxisMarks(position: .leading)
+            AxisMarks(position: .trailing, values: model.voltageTicks) { value in
+                AxisTick()
+                AxisValueLabel {
+                    if let position = value.as(Double.self) {
+                        Text(String(format: "%.1f", model.voltage(atPosition: position)))
+                    }
+                }
+            }
+        }
+        .chartYAxisLabel("mA", position: .leading)
+        .chartYAxisLabel("V", position: .trailing)
+        .frame(height: 220)
+    }
+
+    /// Prepares the shared-plot data: pack voltage is linearly rescaled into
+    /// the current axis space, and the trailing axis converts back for labels.
+    private var currentVoltageModel: CurrentVoltageModel {
+        let current = points(\.currentMa, series: "Current")
+        let packRaw = ChartData.line(
+            session.samples.compactMap { sample in
+                sample.date.map { ($0, Double(sample.packMv) / 1000) }
+            },
+            series: "Pack Voltage",
+            targetCount: 400
+        )
+
+        let currentValues = current.map(\.value)
+        var currentLow = min(0, currentValues.min() ?? 0)
+        var currentHigh = max(currentValues.max() ?? 0, currentLow + 1)
+        let currentPad = (currentHigh - currentLow) * 0.05
+        currentLow -= currentPad
+        currentHigh += currentPad
+
+        let packValues = packRaw.map(\.value)
+        var voltageLow = packValues.min() ?? 9
+        var voltageHigh = packValues.max() ?? 13
+        if voltageHigh - voltageLow < 0.2 {
+            let center = (voltageHigh + voltageLow) / 2
+            voltageLow = center - 0.1
+            voltageHigh = center + 0.1
+        }
+
+        func map(_ voltage: Double) -> Double {
+            currentLow + (voltage - voltageLow) / (voltageHigh - voltageLow) * (currentHigh - currentLow)
+        }
+        let pack = packRaw.map {
+            ChartData.Point(date: $0.date, value: map($0.value), series: $0.series, segment: $0.segment)
+        }
+        let ticks = [0.0, 0.25, 0.5, 0.75, 1.0].map {
+            map(voltageLow + $0 * (voltageHigh - voltageLow))
+        }
+
+        return CurrentVoltageModel(
+            current: current,
+            pack: pack,
+            currentLow: currentLow,
+            currentHigh: currentHigh,
+            voltageLow: voltageLow,
+            voltageHigh: voltageHigh,
+            voltageTicks: ticks
+        )
     }
 
     private var cellsChart: some View {
@@ -561,13 +642,17 @@ struct SessionDetailView: View {
                 VStack(spacing: 1) {
                     Text(label)
                         .font(.caption2.monospacedDigit().weight(.semibold))
+                        .foregroundStyle(Color.primary)
                     Text(date.formatted(date: .omitted, time: .shortened))
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.secondary)
                 }
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                // Solid adaptive color: materials render on a detached layer
+                // inside chart annotations and come out black in dark mode.
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.quaternary))
             }
     }
 
@@ -579,11 +664,12 @@ struct SessionDetailView: View {
         }
     }
 
-    private func points(_ value: (HistorySample) -> Int) -> [ChartData.Point] {
+    private func points(_ value: (HistorySample) -> Int, series: String = "value") -> [ChartData.Point] {
         ChartData.line(
             session.samples.compactMap { sample in
                 sample.date.map { ($0, Double(value(sample))) }
             },
+            series: series,
             targetCount: 400
         )
     }
@@ -607,6 +693,25 @@ struct SessionDetailView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// Data for the combined current/pack-voltage chart: the pack series lives in
+/// current-axis coordinates; `voltage(atPosition:)` converts back for the
+/// trailing axis labels and `voltageTicks` are its mark positions.
+private struct CurrentVoltageModel {
+    let current: [ChartData.Point]
+    let pack: [ChartData.Point]
+    let currentLow: Double
+    let currentHigh: Double
+    let voltageLow: Double
+    let voltageHigh: Double
+    let voltageTicks: [Double]
+
+    func voltage(atPosition position: Double) -> Double {
+        guard currentHigh > currentLow else { return voltageLow }
+        let fraction = (position - currentLow) / (currentHigh - currentLow)
+        return voltageLow + fraction * (voltageHigh - voltageLow)
     }
 }
 
