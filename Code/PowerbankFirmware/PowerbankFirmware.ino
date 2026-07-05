@@ -114,6 +114,9 @@ void loop() {
     persistentStore.update(monitor, monitor.snapshot(), telemetryFlags(), chargeComplete);
 
     if (bleOnline) {
+        // Once the output has idled off nobody is nearby; a 2.5 s advertising
+        // interval saves radio power and still connects within a few seconds.
+        bleApp.setLowPowerAdvertising(controls.idleOutputOff);
         bleApp.update(
             monitor.snapshot(),
             monitor.socPercent(),

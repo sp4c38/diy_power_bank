@@ -314,6 +314,33 @@ struct ChargeSession: Identifiable {
     }
     var id: String { "\(flow.title)-\(start.timeIntervalSinceReferenceDate)" }
 
+    /// Charge moved during the session, integrated over the sample intervals.
+    /// Gaps longer than the history heartbeat are skipped rather than assumed.
+    var transferredMah: Double {
+        var total = 0.0
+        for (a, b) in zip(samples, samples.dropFirst()) {
+            guard let timeA = a.date, let timeB = b.date else { continue }
+            let dt = timeB.timeIntervalSince(timeA)
+            guard dt > 0, dt <= 15 * 60 else { continue }
+            let averageMa = Double(a.currentMa + b.currentMa) / 2
+            total += abs(averageMa) * dt / 3600
+        }
+        return total
+    }
+
+    var transferredWh: Double {
+        var total = 0.0
+        for (a, b) in zip(samples, samples.dropFirst()) {
+            guard let timeA = a.date, let timeB = b.date else { continue }
+            let dt = timeB.timeIntervalSince(timeA)
+            guard dt > 0, dt <= 15 * 60 else { continue }
+            let averageW = (Double(a.currentMa) / 1000 * Double(a.packMv) / 1000 +
+                Double(b.currentMa) / 1000 * Double(b.packMv) / 1000) / 2
+            total += abs(averageW) * dt / 3600
+        }
+        return total
+    }
+
     /// Groups the dated samples into charging/discharging runs. Balancing counts
     /// as part of a charge (it is the tail of one), short idle blips (< 5 min)
     /// don't split a session, and gaps > 20 min always do.
@@ -394,6 +421,7 @@ struct ChargeSession: Identifiable {
 
 struct SessionDetailView: View {
     let session: ChargeSession
+    @State private var selectedDate: Date?
 
     var body: some View {
         ScrollView {
@@ -425,36 +453,68 @@ struct SessionDetailView: View {
                 Divider()
                 summaryItem(Format.current(Int16(clamping: session.averageCurrentMa)), "Avg Current")
             }
+
+            Divider()
+
+            HStack(spacing: 12) {
+                summaryItem(chargeText(session.transferredMah), "Transferred")
+                Divider()
+                summaryItem(String(format: "%.1f Wh", session.transferredWh), "Energy")
+            }
         }
+    }
+
+    private func chargeText(_ mah: Double) -> String {
+        mah >= 1000 ? String(format: "%.2f Ah", mah / 1000) : String(format: "%.0f mAh", mah)
     }
 
     /// For a charge session this is the CC/CV curve: the constant-current
     /// plateau followed by the taper as the cells approach the stop voltage.
     private var currentChart: some View {
-        Chart(points(\.currentMa)) { point in
-            LineMark(
-                x: .value("Time", point.date),
-                y: .value("Current", point.value),
-                series: .value("Segment", point.segmentKey)
-            )
-            .foregroundStyle(Theme.flowColor(session.flow))
-            .interpolationMethod(.monotone)
+        Chart {
+            ForEach(points(\.currentMa)) { point in
+                LineMark(
+                    x: .value("Time", point.date),
+                    y: .value("Current", point.value),
+                    series: .value("Segment", point.segmentKey)
+                )
+                .foregroundStyle(Theme.flowColor(session.flow))
+                .interpolationMethod(.monotone)
+            }
+            if let selectedDate, let sample = nearestSample(to: selectedDate) {
+                scrubber(at: selectedDate, label: "\(sample.currentMa) mA")
+            }
         }
+        .chartXSelection(value: $selectedDate)
         .chartXScale(domain: session.start...session.end)
         .chartYAxisLabel("mA")
         .frame(height: 200)
     }
 
     private var cellsChart: some View {
-        Chart(ChartData.cellLines(session.samples)) { point in
-            LineMark(
-                x: .value("Time", point.date),
-                y: .value("Voltage", point.value),
-                series: .value("Segment", point.segmentKey)
-            )
-            .foregroundStyle(by: .value("Cell", point.series))
-            .interpolationMethod(.monotone)
+        Chart {
+            ForEach(ChartData.cellLines(session.samples)) { point in
+                LineMark(
+                    x: .value("Time", point.date),
+                    y: .value("Voltage", point.value),
+                    series: .value("Segment", point.segmentKey)
+                )
+                .foregroundStyle(by: .value("Cell", point.series))
+                .interpolationMethod(.monotone)
+            }
+            if let selectedDate, let sample = nearestSample(to: selectedDate) {
+                scrubber(
+                    at: selectedDate,
+                    label: String(
+                        format: "%.3f / %.3f / %.3f V",
+                        Double(sample.cell1Mv) / 1000,
+                        Double(sample.cell2Mv) / 1000,
+                        Double(sample.cell5Mv) / 1000
+                    )
+                )
+            }
         }
+        .chartXSelection(value: $selectedDate)
         .chartForegroundStyleScale(ChartData.cellColors)
         .chartXScale(domain: session.start...session.end)
         .chartYScale(domain: ChartData.voltageDomain(ChartData.cellLines(session.samples)))
@@ -466,19 +526,57 @@ struct SessionDetailView: View {
         let temperaturePoints = points { $0.temperatureCentiC }.map {
             ChartData.Point(date: $0.date, value: $0.value / 100, series: $0.series, segment: $0.segment)
         }
-        return Chart(temperaturePoints) { point in
-            LineMark(
-                x: .value("Time", point.date),
-                y: .value("Temperature", point.value),
-                series: .value("Segment", point.segmentKey)
-            )
-            .foregroundStyle(.orange)
-            .interpolationMethod(.monotone)
+        return Chart {
+            ForEach(temperaturePoints) { point in
+                LineMark(
+                    x: .value("Time", point.date),
+                    y: .value("Temperature", point.value),
+                    series: .value("Segment", point.segmentKey)
+                )
+                .foregroundStyle(.orange)
+                .interpolationMethod(.monotone)
+            }
+            if let selectedDate, let sample = nearestSample(to: selectedDate) {
+                scrubber(at: selectedDate, label: Format.temperature(sample.temperatureC))
+            }
         }
+        .chartXSelection(value: $selectedDate)
         .chartXScale(domain: session.start...session.end)
         .chartYScale(domain: ChartData.paddedDomain(temperaturePoints, padding: 2))
         .chartYAxisLabel("°C")
         .frame(height: 160)
+    }
+
+    /// Shared scrub ruler: one drag selects the same instant on all three
+    /// charts, with the local reading annotated above the rule.
+    private func scrubber(at date: Date, label: String) -> some ChartContent {
+        RuleMark(x: .value("Time", date))
+            .foregroundStyle(.secondary.opacity(0.5))
+            .lineStyle(StrokeStyle(lineWidth: 1))
+            .annotation(
+                position: .top,
+                alignment: .center,
+                overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
+            ) {
+                VStack(spacing: 1) {
+                    Text(label)
+                        .font(.caption2.monospacedDigit().weight(.semibold))
+                    Text(date.formatted(date: .omitted, time: .shortened))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6))
+            }
+    }
+
+    private func nearestSample(to date: Date) -> HistorySample? {
+        session.samples.min { a, b in
+            let distanceA = abs((a.date ?? .distantPast).timeIntervalSince(date))
+            let distanceB = abs((b.date ?? .distantPast).timeIntervalSince(date))
+            return distanceA < distanceB
+        }
     }
 
     private func points(_ value: (HistorySample) -> Int) -> [ChartData.Point] {

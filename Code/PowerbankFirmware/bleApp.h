@@ -29,6 +29,7 @@ public:
     bool connected() const;
     void setCommandResult(const char* message);
     void shutdown(unsigned long drainMs);
+    void setLowPowerAdvertising(bool enabled);
 
 private:
     TelemetryPayload buildPayload(
@@ -63,6 +64,7 @@ private:
     bool historyRecordLoaded = false;
     unsigned long lastNotifyMs = 0;
     unsigned long lastAdvertiseKickMs = 0;
+    bool lowPowerAdvertising = false;
 };
 
 #endif

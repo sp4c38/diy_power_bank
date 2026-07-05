@@ -39,6 +39,10 @@ struct DiagnosticsView: View {
                 Divider()
                 row("Uptime", Format.uptime(t.uptimeSec))
                 Divider()
+                // Boot count increments on every firmware start, so daily
+                // maintenance reboots and unexpected resets are visible here.
+                row("Boot", bootText)
+                Divider()
                 row("Signal", signalText)
                 Divider()
                 row("Last update", lastUpdateText)
@@ -179,6 +183,11 @@ struct DiagnosticsView: View {
     private var signalText: String {
         guard ble.connectionState.isConnected, let rssi = ble.rssi else { return "—" }
         return "\(rssi) dBm"
+    }
+
+    private var bootText: String {
+        guard let status = ble.historyStatus else { return "—" }
+        return "#\(status.bootID)"
     }
 
     private var lastUpdateText: String {

@@ -222,20 +222,19 @@ final class HistoryStore: ObservableObject {
     }
 
     func samples(since date: Date) -> [HistorySample] {
-        let descriptor = FetchDescriptor<HistorySample>()
-        let fetched = (try? container.mainContext.fetch(descriptor)) ?? []
-        return fetched
-            .filter { sample in
-                guard let timestamp = sample.timestamp else { return false }
-                return timestamp >= date
-            }
-            .sorted { ($0.timestamp ?? .distantPast) < ($1.timestamp ?? .distantPast) }
+        let distantPast = Date.distantPast
+        let descriptor = FetchDescriptor<HistorySample>(
+            predicate: #Predicate { ($0.timestamp ?? distantPast) >= date },
+            sortBy: [SortDescriptor(\.timestamp)]
+        )
+        return (try? container.mainContext.fetch(descriptor)) ?? []
     }
 
     func unknownTimeSamples() -> [HistorySample] {
-        let descriptor = FetchDescriptor<HistorySample>()
+        let descriptor = FetchDescriptor<HistorySample>(
+            predicate: #Predicate { $0.timestamp == nil }
+        )
         return ((try? container.mainContext.fetch(descriptor)) ?? [])
-            .filter { $0.timestamp == nil }
             .sorted { ($0.sequence ?? 0) < ($1.sequence ?? 0) }
     }
 
@@ -265,9 +264,11 @@ final class HistoryStore: ObservableObject {
 
     func importRecord(_ record: FirmwareHistoryRecord, deviceID: String) {
         let key = "firmware-\(deviceID)-\(record.bootID)-\(record.sequence)"
-        let descriptor = FetchDescriptor<HistorySample>()
-        let existing = ((try? container.mainContext.fetch(descriptor)) ?? [])
-            .first { $0.uniqueKey == key }
+        var descriptor = FetchDescriptor<HistorySample>(
+            predicate: #Predicate { $0.uniqueKey == key }
+        )
+        descriptor.fetchLimit = 1
+        let existing = ((try? container.mainContext.fetch(descriptor)) ?? []).first
         let timestamp = timestamp(for: record, deviceID: deviceID)
         if let existing {
             if existing.timestamp == nil, let timestamp {
@@ -320,13 +321,14 @@ final class HistoryStore: ObservableObject {
         let startEpoch = Date().timeIntervalSince1970 - Double(uptimeSec)
         defaults.set(startEpoch, forKey: bootAnchorKey(deviceID: deviceID, bootID: bootID))
 
-        let descriptor = FetchDescriptor<HistorySample>()
+        let device = deviceID
+        let boot: Int64? = Int64(bootID)
+        let descriptor = FetchDescriptor<HistorySample>(
+            predicate: #Predicate { $0.deviceID == device && $0.bootID == boot && $0.timestamp == nil }
+        )
         guard let samples = try? container.mainContext.fetch(descriptor) else { return }
         var changed = false
         for sample in samples {
-            guard sample.deviceID == deviceID,
-                  sample.bootID == Int64(bootID),
-                  sample.timestamp == nil else { continue }
             sample.timestamp = Date(timeIntervalSince1970: startEpoch + Double(sample.uptimeSec))
             changed = true
         }
@@ -340,9 +342,12 @@ final class HistoryStore: ObservableObject {
     }
 
     func reset(deviceID: String) {
-        let descriptor = FetchDescriptor<HistorySample>()
+        let device = deviceID
+        let descriptor = FetchDescriptor<HistorySample>(
+            predicate: #Predicate { $0.deviceID == device }
+        )
         if let samples = try? container.mainContext.fetch(descriptor) {
-            for sample in samples where sample.deviceID == deviceID {
+            for sample in samples {
                 container.mainContext.delete(sample)
             }
         }

@@ -49,9 +49,26 @@ bool BLEApp::begin() {
     HealthPayload emptyHealth = {};
     healthCharacteristic.writeValue((const uint8_t*) &emptyHealth, sizeof(emptyHealth));
 
+    BLE.setAdvertisingInterval(thresholds::advertisingFastUnits);
     BLE.advertise();
     Log.noticeln("Started BLE advertising.");
     return true;
+}
+
+void BLEApp::setLowPowerAdvertising(bool enabled) {
+    if (enabled == lowPowerAdvertising) {
+        return;
+    }
+    lowPowerAdvertising = enabled;
+    BLE.setAdvertisingInterval(
+        enabled ? thresholds::advertisingSlowUnits : thresholds::advertisingFastUnits
+    );
+    if (!connected()) {
+        BLE.stopAdvertise();
+        BLE.advertise();
+        lastAdvertiseKickMs = millis();
+    }
+    Log.noticeln("BLE advertising interval: %s.", enabled ? "slow (2.5 s)" : "fast (100 ms)");
 }
 
 void BLEApp::attachStore(PersistentStore* persistentStore) {

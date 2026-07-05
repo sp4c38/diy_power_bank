@@ -93,6 +93,11 @@ namespace thresholds {
     // BQ FETs), so BLE reachability and MCU shutdown are cell-protection issues.
     const unsigned long advertiseKickIntervalMs = 5UL * 60UL * 1000UL;
     const unsigned long bleShutdownDrainMs = 1000UL;
+    // Advertising interval in 0.625 ms units: fast while in use so the app
+    // connects instantly, slow (2.5 s) once the output has idled off to save
+    // radio power at the cost of a few seconds of connect latency.
+    const uint16_t advertisingFastUnits = 160;   // 100 ms
+    const uint16_t advertisingSlowUnits = 4000;  // 2.5 s
     const uint32_t watchdogTimeoutMs = 16000UL;
     // Self-heal reboot for a wedged BLE stack. Skipped while the very-long-idle
     // ship countdown runs, so it cannot postpone SHIP indefinitely.

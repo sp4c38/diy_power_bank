@@ -417,7 +417,9 @@ enum RuntimeEstimate: Equatable {
 /// Estimates time to full/empty from the slope of the firmware's coulomb count
 /// (`chargeMahTenths`) over the last few minutes, instead of dividing by the
 /// instantaneous current. The coulomb count is already median-filtered on the
-/// firmware side and naturally tracks the charger's CV taper.
+/// firmware side and naturally tracks the charger's CV taper. While the trend
+/// warms up (fresh flow, or reset after a large load step) the instantaneous
+/// current stands in so an estimate appears immediately.
 final class RuntimeEstimator {
     private struct Sample {
         let time: Date
@@ -426,6 +428,7 @@ final class RuntimeEstimator {
 
     private var samples: [Sample] = []
     private var lastFlow: PowerFlow = .idle
+    private var previousCurrentMa: Int16?
 
     /// Trend window and the minimum span it must cover before we trust it.
     private let windowSec: TimeInterval = 5 * 60
@@ -444,7 +447,20 @@ final class RuntimeEstimator {
             samples.removeAll()
             lastFlow = flow
         }
-        guard flow != .idle else { return nil }
+        guard flow != .idle else {
+            previousCurrentMa = nil
+            return nil
+        }
+
+        // A big load step makes the accumulated trend misleading; start over
+        // and lean on the instantaneous fallback until the new trend forms.
+        if let previous = previousCurrentMa {
+            let delta = abs(Int(telemetry.currentMa) - Int(previous))
+            if delta > max(100, abs(Int(previous)) * 3 / 10) {
+                samples.removeAll()
+            }
+        }
+        previousCurrentMa = telemetry.currentMa
 
         let now = telemetry.receivedAt
         if let last = samples.last, now.timeIntervalSince(last.time) > 30 {
@@ -456,29 +472,36 @@ final class RuntimeEstimator {
         }
         samples.removeAll { now.timeIntervalSince($0.time) > windowSec }
 
-        guard let first = samples.first, let latest = samples.last,
-              latest.time.timeIntervalSince(first.time) >= minimumSpanSec,
-              samples.count >= 10 else { return nil }
+        let trendReady = samples.count >= 10 &&
+            (samples.last?.time.timeIntervalSince(samples.first?.time ?? now) ?? 0) >= minimumSpanSec
+        // While the trend warms up, the instantaneous current stands in
+        // (mA equals mAh/h numerically); the taper capping below keeps it from
+        // producing the old end-of-charge blowup.
+        let rateMahPerHour: Double
+        if trendReady, let slope = Self.slopeMahPerHour(samples) {
+            rateMahPerHour = slope
+        } else {
+            rateMahPerHour = Double(telemetry.currentMa)
+        }
 
-        guard let slopeMahPerHour = Self.slopeMahPerHour(samples) else { return nil }
-
+        let chargeMah = telemetry.chargeRemainingMah
         switch flow {
         case .charging:
             guard !telemetry.chargeComplete else { return nil }
-            let remainingMah = max(0, capacityMah - latest.chargeMah)
+            let remainingMah = max(0, capacityMah - chargeMah)
             let inTaper = telemetry.maxCellMv >= taperThresholdMv
-            guard slopeMahPerHour > minimumRateMahPerHour else {
+            guard rateMahPerHour > minimumRateMahPerHour else {
                 return inTaper ? .finishingCharge(minutes: 30) : nil
             }
-            let hours = remainingMah / slopeMahPerHour
+            let hours = remainingMah / rateMahPerHour
             if inTaper {
                 return .finishingCharge(minutes: min(45, max(5, Int((hours * 60).rounded()))))
             }
             return .toFull(hours: hours)
         case .discharging:
-            let rate = -slopeMahPerHour
+            let rate = -rateMahPerHour
             guard rate > minimumRateMahPerHour else { return nil }
-            return .toEmpty(hours: latest.chargeMah / rate)
+            return .toEmpty(hours: chargeMah / rate)
         case .idle:
             return nil
         }
